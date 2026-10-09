@@ -632,9 +632,14 @@
       const password = document.getElementById('loginPassword').value;
       const btn = document.getElementById('btnSubmitLogin');
 
+      // Base URL for Render Backend
+      const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? ''
+        : 'https://connectoryfin.onrender.com';
+
       btn.disabled = true;
       try {
-        const res = await fetch('/api/auth/login', {
+        const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
@@ -671,6 +676,11 @@
       const confirm = document.getElementById('regPasswordConfirm').value;
       const btn = document.getElementById('btnSubmitRegister');
 
+      // Base URL for Render Backend
+      const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? ''
+        : 'https://connectoryfin.onrender.com';
+
       if (password !== confirm) {
         showAlert(I18N[currentLang].pwdMismatch, 'danger');
         return;
@@ -678,7 +688,7 @@
 
       btn.disabled = true;
       try {
-        const res = await fetch('/api/auth/register', {
+        const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password, businessName })

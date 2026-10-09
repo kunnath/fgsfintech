@@ -53,8 +53,8 @@ function sendJson(res, statusCode, data) {
   res.writeHead(statusCode, {
     'Content-Type': 'application/json; charset=utf-8',
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, X-Session-ID, X-Lang, X-User-ID',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+    'Access-Control-Allow-Headers': 'Content-Type, X-Session-ID, X-Lang, X-User-ID, Authorization, x-user-id, x-session-id, x-lang, *',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS'
   });
   res.end(JSON.stringify(data));
 }
@@ -63,14 +63,19 @@ async function handleApiRequest(req, res, pathname) {
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, X-Session-ID, X-Lang, X-User-ID'
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, X-Session-ID, X-Lang, X-User-ID, Authorization, x-user-id, x-session-id, x-lang, *'
     });
     return res.end();
   }
 
-  // POST /api/auth/register
-  if (req.method === 'POST' && pathname === '/api/auth/register') {
+  let cleanPath = (pathname || '').replace(/\/+$/, '') || '/';
+  if (!cleanPath.startsWith('/api')) {
+    cleanPath = '/api' + cleanPath;
+  }
+
+  // POST /api/auth/register or /auth/register
+  if (req.method === 'POST' && (cleanPath === '/api/auth/register' || cleanPath === '/api/register')) {
     let body = '';
     req.on('data', chunk => { body += chunk; });
     req.on('end', async () => {
@@ -106,8 +111,8 @@ async function handleApiRequest(req, res, pathname) {
     return;
   }
 
-  // POST /api/auth/login
-  if (req.method === 'POST' && pathname === '/api/auth/login') {
+  // POST /api/auth/login or /auth/login
+  if (req.method === 'POST' && (cleanPath === '/api/auth/login' || cleanPath === '/api/login')) {
     let body = '';
     req.on('data', chunk => { body += chunk; });
     req.on('end', async () => {
@@ -134,8 +139,8 @@ async function handleApiRequest(req, res, pathname) {
     return;
   }
 
-  // GET /api/auth/me
-  if (req.method === 'GET' && pathname === '/api/auth/me') {
+  // GET /api/auth/me or /auth/me
+  if (req.method === 'GET' && (cleanPath === '/api/auth/me' || cleanPath === '/api/me')) {
     const userId = req.headers['x-user-id'];
     if (!userId) {
       return sendJson(res, 200, { authenticated: false, user: null });
@@ -144,8 +149,8 @@ async function handleApiRequest(req, res, pathname) {
     return sendJson(res, 200, { authenticated: !!user, user });
   }
 
-  // POST /api/auth/logout
-  if (req.method === 'POST' && pathname === '/api/auth/logout') {
+  // POST /api/auth/logout or /auth/logout
+  if (req.method === 'POST' && (cleanPath === '/api/auth/logout' || cleanPath === '/api/logout')) {
     return sendJson(res, 200, { success: true, message: "Logged out successfully" });
   }
 
@@ -159,8 +164,8 @@ async function handleApiRequest(req, res, pathname) {
     });
   }
 
-  // GET /api/init
-  if (req.method === 'GET' && pathname === '/api/init') {
+  // GET /api/init or /init
+  if (req.method === 'GET' && (cleanPath === '/api/init' || cleanPath === '/api/')) {
     try {
       const greeting = session.getGreeting();
       const calculation = session.getCalculatedState();
@@ -180,7 +185,7 @@ async function handleApiRequest(req, res, pathname) {
   }
 
   // POST /api/set-language
-  if (req.method === 'POST' && pathname === '/api/set-language') {
+  if (req.method === 'POST' && cleanPath === '/api/set-language') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
     req.on('end', async () => {
@@ -208,7 +213,7 @@ async function handleApiRequest(req, res, pathname) {
   }
 
   // GET /api/state
-  if (req.method === 'GET' && pathname === '/api/state') {
+  if (req.method === 'GET' && cleanPath === '/api/state') {
     const calculation = session.getCalculatedState();
     return sendJson(res, 200, {
       calculation,
@@ -220,7 +225,7 @@ async function handleApiRequest(req, res, pathname) {
   }
 
   // POST /api/chat
-  if (req.method === 'POST' && pathname === '/api/chat') {
+  if (req.method === 'POST' && cleanPath === '/api/chat') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
     req.on('end', async () => {
@@ -248,7 +253,7 @@ async function handleApiRequest(req, res, pathname) {
   }
 
   // POST /api/set-net-profit-target
-  if (req.method === 'POST' && pathname === '/api/set-net-profit-target') {
+  if (req.method === 'POST' && cleanPath === '/api/set-net-profit-target') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
     req.on('end', async () => {
@@ -277,7 +282,7 @@ async function handleApiRequest(req, res, pathname) {
   }
 
   // POST /api/back
-  if (req.method === 'POST' && pathname === '/api/back') {
+  if (req.method === 'POST' && cleanPath === '/api/back') {
     const botResponse = session.stepBack();
     const calculation = session.getCalculatedState();
     await saveSessionToDb(sessionId, session.toJSON());
@@ -292,7 +297,7 @@ async function handleApiRequest(req, res, pathname) {
   }
 
   // POST /api/jump-sheet
-  if (req.method === 'POST' && pathname === '/api/jump-sheet') {
+  if (req.method === 'POST' && cleanPath === '/api/jump-sheet') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
     req.on('end', async () => {
@@ -318,7 +323,7 @@ async function handleApiRequest(req, res, pathname) {
   }
 
   // POST /api/preset
-  if (req.method === 'POST' && pathname === '/api/preset') {
+  if (req.method === 'POST' && cleanPath === '/api/preset') {
     const botResponse = session.processMessage('preset');
     const calculation = session.getCalculatedState();
     await saveSessionToDb(sessionId, session.toJSON());
@@ -333,7 +338,7 @@ async function handleApiRequest(req, res, pathname) {
   }
 
   // POST /api/reset
-  if (req.method === 'POST' && pathname === '/api/reset') {
+  if (req.method === 'POST' && cleanPath === '/api/reset') {
     session.reset();
     const greeting = session.getGreeting();
     const calculation = session.getCalculatedState();
@@ -349,7 +354,7 @@ async function handleApiRequest(req, res, pathname) {
   }
 
   // POST or GET /api/export-excel
-  if (pathname === '/api/export-excel') {
+  if (cleanPath === '/api/export-excel') {
     try {
       const buffer = await exportPlanToBuffer(session.customPlanData);
       res.writeHead(200, {
@@ -372,7 +377,7 @@ const server = http.createServer((req, res) => {
   const urlObj = new URL(req.url, `http://${req.headers.host}`);
   const pathname = urlObj.pathname;
 
-  if (pathname.startsWith('/api/')) {
+  if (req.method === 'OPTIONS' || pathname.startsWith('/api') || pathname.startsWith('/auth')) {
     return handleApiRequest(req, res, pathname);
   }
 

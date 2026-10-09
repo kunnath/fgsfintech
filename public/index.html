@@ -1042,10 +1042,15 @@
     let currentQuestion = null;
     let activeSheetKey = 'anl1';
 
+    // Base URL for Render Backend API
+    const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? ''
+      : 'https://connectoryfin.onrender.com';
+
     function getUserId() {
       try {
         const u = JSON.parse(localStorage.getItem('fgs_user') || '{}');
-        return u.userId || '';
+        return u.userId || u.id || '';
       } catch (e) {
         return '';
       }
@@ -1062,7 +1067,8 @@
 
     async function apiFetch(url, options = {}) {
       options.headers = getAuthHeaders(options.headers || {});
-      const res = await fetch(url, options);
+      const targetUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+      const res = await fetch(targetUrl, options);
       if (res && res.status === 401) {
         localStorage.removeItem('fgs_user');
         window.location.replace('/auth.html');
@@ -1935,7 +1941,7 @@
     async function handleLogout() {
       localStorage.removeItem('fgs_user');
       try {
-        await fetch('/api/auth/logout', { method: 'POST' });
+        await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST' });
       } catch (e) {}
       window.location.replace('/auth.html');
     }
