@@ -53,7 +53,7 @@ function sendJson(res, statusCode, data) {
   res.writeHead(statusCode, {
     'Content-Type': 'application/json; charset=utf-8',
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, X-Session-ID, X-Lang',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Session-ID, X-Lang, X-User-ID',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
   });
   res.end(JSON.stringify(data));
@@ -64,7 +64,7 @@ async function handleApiRequest(req, res, pathname) {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, X-Session-ID, X-Lang'
+      'Access-Control-Allow-Headers': 'Content-Type, X-Session-ID, X-Lang, X-User-ID'
     });
     return res.end();
   }
@@ -147,6 +147,16 @@ async function handleApiRequest(req, res, pathname) {
   // POST /api/auth/logout
   if (req.method === 'POST' && pathname === '/api/auth/logout') {
     return sendJson(res, 200, { success: true, message: "Logged out successfully" });
+  }
+
+  // Enforce Authentication for all financial planning endpoints
+  const authUserId = req.headers['x-user-id'];
+  if (!authUserId) {
+    return sendJson(res, 401, {
+      success: false,
+      error: "Authentication required. Please sign in or register / Anmeldung erforderlich.",
+      requireAuth: true
+    });
   }
 
   // GET /api/init

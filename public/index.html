@@ -4,6 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ConnectoryFinAssistant - Financial Planning Assistant / Finanzplanungs-Chatbot</title>
+  <script>
+    // Enforce authentication gate: redirect immediately to /auth.html if user is not signed in
+    (function() {
+      try {
+        var user = localStorage.getItem('fgs_user');
+        if (!user) {
+          window.location.replace('/auth.html');
+        }
+      } catch (e) {
+        window.location.replace('/auth.html');
+      }
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1029,6 +1042,35 @@
     let currentQuestion = null;
     let activeSheetKey = 'anl1';
 
+    function getUserId() {
+      try {
+        const u = JSON.parse(localStorage.getItem('fgs_user') || '{}');
+        return u.userId || '';
+      } catch (e) {
+        return '';
+      }
+    }
+
+    function getAuthHeaders(extra = {}) {
+      return {
+        'X-Session-ID': sessionId,
+        'X-Lang': currentLang,
+        'X-User-ID': getUserId(),
+        ...extra
+      };
+    }
+
+    async function apiFetch(url, options = {}) {
+      options.headers = getAuthHeaders(options.headers || {});
+      const res = await fetch(url, options);
+      if (res && res.status === 401) {
+        localStorage.removeItem('fgs_user');
+        window.location.replace('/auth.html');
+        return null;
+      }
+      return res;
+    }
+
     // UI Dictionary for German & English
     const I18N = {
       de: {
@@ -1169,15 +1211,12 @@
       applyLanguageToUI();
 
       try {
-        const res = await fetch('/api/set-language', {
+        const res = await apiFetch('/api/set-language', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Session-ID': sessionId,
-            'X-Lang': currentLang
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lang: currentLang })
         });
+        if (!res) return;
         const data = await res.json();
         if (data.greeting) {
           appendMessage('ConnectoryFinAssistant', data.greeting.text);
@@ -1380,15 +1419,12 @@
       document.getElementById('dockInput').value = '';
 
       try {
-        const res = await fetch('/api/chat', {
+        const res = await apiFetch('/api/chat', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Session-ID': sessionId,
-            'X-Lang': currentLang
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: msg })
         });
+        if (!res) return;
         const data = await res.json();
         
         if (data.response) {
@@ -1417,13 +1453,8 @@
     // Step back
     async function stepBack() {
       try {
-        const res = await fetch('/api/back', {
-          method: 'POST',
-          headers: {
-            'X-Session-ID': sessionId,
-            'X-Lang': currentLang
-          }
-        });
+        const res = await apiFetch('/api/back', { method: 'POST' });
+        if (!res) return;
         const data = await res.json();
         if (data.response) {
           appendMessage('ConnectoryFinAssistant', data.response.text);
@@ -1446,15 +1477,12 @@
     // Jump to sheet
     async function jumpToSheet(sheetNum) {
       try {
-        const res = await fetch('/api/jump-sheet', {
+        const res = await apiFetch('/api/jump-sheet', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Session-ID': sessionId,
-            'X-Lang': currentLang
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sheetNum })
         });
+        if (!res) return;
         const data = await res.json();
         if (data.response) {
           appendMessage('ConnectoryFinAssistant', data.response.text);
@@ -1495,15 +1523,12 @@
       const val = parseFloat(input.value.replace(/[^0-9.]/g, '')) || 100000;
       
       try {
-        const res = await fetch('/api/set-net-profit-target', {
+        const res = await apiFetch('/api/set-net-profit-target', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Session-ID': sessionId,
-            'X-Lang': currentLang
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ targetNetProfit: val, autoScaleRevenue: true })
         });
+        if (!res) return;
         const data = await res.json();
         if (data.response) {
           appendMessage('ConnectoryFinAssistant', data.response.text);
@@ -1804,13 +1829,8 @@
     async function loadPreset() {
       try {
         appendMessage('User', currentLang === 'en' ? '⚡ Load 100k Net Profit Preset' : '⚡ PrimeDiet Care (100k NettoProfit) Vorlage laden');
-        const res = await fetch('/api/preset', {
-          method: 'POST',
-          headers: {
-            'X-Session-ID': sessionId,
-            'X-Lang': currentLang
-          }
-        });
+        const res = await apiFetch('/api/preset', { method: 'POST' });
+        if (!res) return;
         const data = await res.json();
         if (data.response) {
           appendMessage('ConnectoryFinAssistant', data.response.text);
@@ -1830,13 +1850,8 @@
     async function resetPlan() {
       if (!confirm(I18N[currentLang].resetConfirm)) return;
       try {
-        const res = await fetch('/api/reset', {
-          method: 'POST',
-          headers: {
-            'X-Session-ID': sessionId,
-            'X-Lang': currentLang
-          }
-        });
+        const res = await apiFetch('/api/reset', { method: 'POST' });
+        if (!res) return;
         const data = await res.json();
         document.getElementById('chatMessages').innerHTML = '';
         if (data.response) {
@@ -1860,13 +1875,8 @@
     // Export Excel
     async function exportExcel() {
       try {
-        const res = await fetch('/api/export-excel', {
-          method: 'POST',
-          headers: {
-            'X-Session-ID': sessionId,
-            'X-Lang': currentLang
-          }
-        });
+        const res = await apiFetch('/api/export-excel', { method: 'POST' });
+        if (!res) return;
         
         const contentType = res.headers.get('content-type') || '';
         if (contentType.includes('application/json')) {
@@ -1917,8 +1927,8 @@
         }
       }
 
-      if (authBtn) authBtn.style.display = 'inline-flex';
-      if (userBadge) userBadge.style.display = 'none';
+      // If not authenticated, force redirect to auth page
+      window.location.replace('/auth.html');
       return null;
     }
 
@@ -1927,21 +1937,18 @@
       try {
         await fetch('/api/auth/logout', { method: 'POST' });
       } catch (e) {}
-      checkUserAuth();
-      window.location.reload();
+      window.location.replace('/auth.html');
     }
 
     // Init App
     async function initApp() {
-      checkUserAuth();
+      const user = checkUserAuth();
+      if (!user) return;
+
       applyLanguageToUI();
       try {
-        const res = await fetch('/api/init', {
-          headers: {
-            'X-Session-ID': sessionId,
-            'X-Lang': currentLang
-          }
-        });
+        const res = await apiFetch('/api/init');
+        if (!res) return;
         const data = await res.json();
         if (data.greeting) {
           appendMessage('ConnectoryFinAssistant', data.greeting.text);

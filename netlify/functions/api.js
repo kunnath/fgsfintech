@@ -9,7 +9,7 @@ const { getSessionFromDb, saveSessionToDb, logChatToDb, registerUser, authentica
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, X-Session-ID, X-Lang',
+  'Access-Control-Allow-Headers': 'Content-Type, X-Session-ID, X-Lang, X-User-ID',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Content-Type': 'application/json; charset=utf-8'
 };
@@ -126,6 +126,16 @@ exports.handler = async function (event, context) {
     // POST /api/auth/logout or /auth/logout
     if (method === 'POST' && (path === '/auth/logout' || path === '/logout')) {
       return jsonResponse(200, { success: true, message: "Logged out successfully" });
+    }
+
+    // Enforce Authentication for all financial planning endpoints
+    const authUserId = headers['x-user-id'] || headers['X-User-ID'] || headers['X-User-Id'] || query.userId;
+    if (!authUserId) {
+      return jsonResponse(401, {
+        success: false,
+        error: "Authentication required. Please sign in or register / Anmeldung erforderlich.",
+        requireAuth: true
+      });
     }
 
     // GET /api/init or /init
