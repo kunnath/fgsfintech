@@ -9,7 +9,7 @@ const path = require('path');
 const { ConnectoryFinAssistantSession, FGSBotSession } = require('./botLogic.js');
 const { calculateFinancialPlan } = require('./financialEngine.js');
 const { exportPlanToBuffer, exportPlanToFile } = require('./excelExporter.js');
-const { connectToDatabase, getSessionFromDb, saveSessionToDb, logChatToDb, DB_NAME } = require('./db.js');
+const { connectToDatabase, getSessionFromDb, saveSessionToDb, logChatToDb, registerUser, authenticateUser, getUserById, DB_NAME } = require('./db.js');
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -69,7 +69,85 @@ async function handleApiRequest(req, res, pathname) {
     return res.end();
   }
 
-  const { session, sessionId } = await getSession(req);
+  // POST /api/auth/register
+  if (req.method === 'POST' && pathname === '/api/auth/register') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', async () => {
+      try {
+        const { name, email, password, businessName } = JSON.parse(body || '{}');
+        if (!name || !email || !password) {
+          return sendJson(res, 400, { success: false, error: "Name, email and password are required / Name, E-Mail und Passwort sind erforderlich." });
+        }
+        if (password.length < 6) {
+          return sendJson(res, 400, { success: false, error: "Password must be at least 6 characters / Passwort muss mindestens 6 Zeichen lang sein." });
+        }
+
+        const result = await registerUser({ name, email, password, businessName });
+        if (!result.success) {
+          return sendJson(res, 400, result);
+        }
+
+        // Initialize user-linked session
+        if (businessName) {
+          session.customPlanData.umsatzplanung.geschaeftsfeld_1_name = businessName;
+        }
+        await saveSessionToDb(sessionId, session.toJSON());
+
+        return sendJson(res, 201, {
+          success: true,
+          user: result.user,
+          sessionId
+        });
+      } catch (err) {
+        return sendJson(res, 500, { success: false, error: err.message });
+      }
+    });
+    return;
+  }
+
+  // POST /api/auth/login
+  if (req.method === 'POST' && pathname === '/api/auth/login') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', async () => {
+      try {
+        const { email, password } = JSON.parse(body || '{}');
+        if (!email || !password) {
+          return sendJson(res, 400, { success: false, error: "Email and password are required / E-Mail und Passwort sind erforderlich." });
+        }
+
+        const result = await authenticateUser(email, password);
+        if (!result.success) {
+          return sendJson(res, 401, result);
+        }
+
+        return sendJson(res, 200, {
+          success: true,
+          user: result.user,
+          sessionId
+        });
+      } catch (err) {
+        return sendJson(res, 500, { success: false, error: err.message });
+      }
+    });
+    return;
+  }
+
+  // GET /api/auth/me
+  if (req.method === 'GET' && pathname === '/api/auth/me') {
+    const userId = req.headers['x-user-id'];
+    if (!userId) {
+      return sendJson(res, 200, { authenticated: false, user: null });
+    }
+    const user = await getUserById(userId);
+    return sendJson(res, 200, { authenticated: !!user, user });
+  }
+
+  // POST /api/auth/logout
+  if (req.method === 'POST' && pathname === '/api/auth/logout') {
+    return sendJson(res, 200, { success: true, message: "Logged out successfully" });
+  }
 
   // GET /api/init
   if (req.method === 'GET' && pathname === '/api/init') {

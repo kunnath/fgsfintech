@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ConnectoryFinAssistant - Sign In & Registration / Anmeldung</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #080c16;
+      --bg-surface: #0f172a;
+      --bg-card: #131c31;
+      --bg-card-hover: #1a2642;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --accent-glow: rgba(16, 185, 129, 0.25);
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #1e293b;
+      --border-light: #334155;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(59, 130, 246, 0.15), transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(16, 185, 129, 0.12), transparent 45%);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      line-height: 1.5;
+    }
+
+    /* Top Language & Back Bar */
+    .top-nav {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .nav-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      transition: all 0.2s ease;
+    }
+
+    .nav-back-link:hover {
+      color: #fff;
+      background: rgba(30, 41, 59, 0.8);
+      border-color: #475569;
+    }
+
+    .lang-switcher {
+      display: flex;
+      background: #19253d;
+      border: 1px solid #2d3e5e;
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .lang-btn {
+      padding: 5px 9px;
+      font-size: 12px;
+      font-weight: 700;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .lang-btn.active {
+      background: #3b82f6;
+      color: #fff;
+      box-shadow: 0 1px 6px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Main Auth Container */
+    .auth-wrapper {
+      width: 100%;
+      max-width: 480px;
+      margin: 40px auto 20px auto;
+    }
+
+    .brand-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .brand-logo {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 12px auto;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+    }
+
+    .brand-header h1 {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #60a5fa, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+
+    .brand-header p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Auth Card */
+    .auth-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+      position: relative;
+    }
+
+    /* Tabs Toggle */
+    .auth-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #0d1527;
+      padding: 4px;
+      border-radius: var(--radius-md);
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      padding: 10px;
+      text-align: center;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border: none;
+      background: transparent;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .tab-btn:hover {
+      color: #fff;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      color: #64748b;
+      font-size: 16px;
+      pointer-events: none;
+    }
+
+    .form-control {
+      width: 100%;
+      background: #0c1424;
+      border: 1.5px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: 11px 14px 11px 40px;
+      color: #fff;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+      background: #101a2f;
+    }
+
+    .toggle-pwd {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 4px;
+    }
+    .toggle-pwd:hover { color: #cbd5e1; }
+
+    .form-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .forgot-link {
+      color: #60a5fa;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .forgot-link:hover { text-decoration: underline; }
+
+    /* Alert / Error Messages */
+    .alert {
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .alert-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .alert-success {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Submit Button */
+    .btn-submit {
+      width: 100%;
+      padding: 13px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-primary:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.6);
+    }
+
+    .btn-accent {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-accent:hover {
+      background: #10b981;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.6);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .card-footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+
+    .card-footer a {
+      color: #60a5fa;
+      text-decoration: none;
+      font-weight: 700;
+      margin-left: 4px;
+    }
+
+    .card-footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <div class="top-nav">
+    <a href="/" class="nav-back-link">
+      <span>⬅</span>
+      <span id="lblBackToApp">Zurück zur Finanzplanung</span>
+    </a>
+    <div class="lang-switcher">
+      <button class="lang-btn active" id="btnLangDe" onclick="setLanguage('de')">🇩🇪 DE</button>
+      <button class="lang-btn" id="btnLangEn" onclick="setLanguage('en')">🇬🇧 EN</button>
+    </div>
+  </div>
+
+  <div class="auth-wrapper">
+    <!-- Brand Header -->
+    <div class="brand-header">
+      <div class="brand-logo">🤖</div>
+      <h1>ConnectoryFinAssistant</h1>
+      <p id="uiAuthSub">Finanzplanungs- & Businessplan-Portal für Gründer</p>
+    </div>
+
+    <!-- Main Card -->
+    <div class="auth-card">
+      <!-- Tab Bar -->
+      <div class="auth-tabs">
+        <button class="tab-btn active" id="tabLoginBtn" onclick="switchTab('login')">🔑 <span id="lblTabLogin">Anmelden</span></button>
+        <button class="tab-btn" id="tabRegisterBtn" onclick="switchTab('register')">✨ <span id="lblTabRegister">Registrieren</span></button>
+      </div>
+
+      <!-- Alert Box -->
+      <div class="alert" id="authAlert"></div>
+
+      <!-- ================= SIGN IN FORM ================= -->
+      <form id="formLogin" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="loginEmail" id="lblLoginEmail">E-Mail-Adresse</label>
+          <div class="input-wrapper">
+            <span class="input-icon">✉️</span>
+            <input type="email" id="loginEmail" class="form-control" placeholder="name@beispiel.de" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword" id="lblLoginPassword">Passwort</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+            <button type="button" class="toggle-pwd" onclick="togglePwdVisibility('loginPassword')">👁️</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="rememberMe" checked>
+            <span id="lblRememberMe">Angemeldet bleiben</span>
+          </label>
+          <a href="#" class="forgot-link" id="lblForgotPwd" onclick="alert(currentLang === 'en' ? 'Password reset link sent to your registered email.' : 'Passwort-Zurücksetzungs-Link an deine E-Mail gesendet.')">Passwort vergessen?</a>
+        </div>
+
+        <button type="submit" class="btn-submit btn-primary" id="btnSubmitLogin">
+          <span>🚀</span>
+          <span id="lblBtnLogin">Jetzt anmelden & Plan öffnen</span>
+        </button>
+
+        <div class="card-footer">
+          <span id="lblNoAccount">Noch kein Konto?</span>
+          <a href="#" onclick="switchTab('register')" id="lblSwitchRegister">Jetzt registrieren</a>
+        </div>
+      </form>
+
+      <!-- ================= REGISTRATION FORM ================= -->
+      <form id="formRegister" onsubmit="handleRegister(event)" style="display: none;">
+        <div class="form-group">
+          <label for="regName" id="lblRegName">Dein Name / Gründer(in)</label>
+          <div class="input-wrapper">
+            <span class="input-icon">👤</span>
+            <input type="text" id="regName" class="form-control" placeholder="z.B. Lisa Schmidt" required autocomplete="name">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="regBusiness" id="lblRegBusiness">Geschäftsidee / Unternehmensname (Optional)</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🏢</span>
+            <input type="text" id="regBusiness" class="form-control" placeholder="z.B. PrimeDiet Care / Mein Startup" autocomplete="organization">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="regEmail" id="lblRegEmail">E-Mail-Adresse</label>
+          <div class="input-wrapper">
+            <span class="input-icon">✉️</span>
+            <input type="email" id="regEmail" class="form-control" placeholder="name@beispiel.de" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="regPassword" id="lblRegPassword">Passwort (min. 6 Zeichen)</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="regPassword" class="form-control" placeholder="••••••••" minlength="6" required autocomplete="new-password">
+            <button type="button" class="toggle-pwd" onclick="togglePwdVisibility('regPassword')">👁️</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="regPasswordConfirm" id="lblRegPasswordConfirm">Passwort bestätigen</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="regPasswordConfirm" class="form-control" placeholder="••••••••" minlength="6" required autocomplete="new-password">
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit btn-accent" id="btnSubmitRegister">
+          <span>✨</span>
+          <span id="lblBtnRegister">Konto erstellen & Plan starten</span>
+        </button>
+
+        <div class="card-footer">
+          <span id="lblHaveAccount">Bereits registriert?</span>
+          <a href="#" onclick="switchTab('login')" id="lblSwitchLogin">Hier anmelden</a>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <script>
+    let currentLang = localStorage.getItem('fgsbot_lang') || 'de';
+    let currentTab = 'login';
+
+    const I18N = {
+      de: {
+        pageTitle: "ConnectoryFinAssistant - Anmeldung & Registrierung",
+        authSub: "Finanzplanungs- & Businessplan-Portal für Gründer",
+        backToApp: "Zurück zur Finanzplanung",
+        tabLogin: "Anmelden",
+        tabRegister: "Registrieren",
+        loginEmail: "E-Mail-Adresse",
+        loginPassword: "Passwort",
+        rememberMe: "Angemeldet bleiben",
+        forgotPwd: "Passwort vergessen?",
+        btnLogin: "Jetzt anmelden & Plan öffnen",
+        noAccount: "Noch kein Konto?",
+        switchRegister: "Jetzt registrieren",
+        regName: "Dein Name / Gründer(in)",
+        regBusiness: "Geschäftsidee / Unternehmensname (Optional)",
+        regEmail: "E-Mail-Adresse",
+        regPassword: "Passwort (min. 6 Zeichen)",
+        regPasswordConfirm: "Passwort bestätigen",
+        btnRegister: "Konto erstellen & Plan starten",
+        haveAccount: "Bereits registriert?",
+        switchLogin: "Hier anmelden",
+        pwdMismatch: "Passwörter stimmen nicht überein!",
+        regSuccess: "🎉 Registrierung erfolgreich! Du wirst weitergeleitet...",
+        loginSuccess: "✅ Erfolgreich angemeldet! Lade Finanzplan..."
+      },
+      en: {
+        pageTitle: "ConnectoryFinAssistant - Sign In & Registration",
+        authSub: "Financial & Business Planning Portal for Founders",
+        backToApp: "Back to Financial Plan",
+        tabLogin: "Sign In",
+        tabRegister: "Register",
+        loginEmail: "Email Address",
+        loginPassword: "Password",
+        rememberMe: "Remember me",
+        forgotPwd: "Forgot password?",
+        btnLogin: "Sign In & Open Financial Plan",
+        noAccount: "Don't have an account?",
+        switchRegister: "Create one now",
+        regName: "Full Name / Founder",
+        regBusiness: "Business / Startup Name (Optional)",
+        regEmail: "Email Address",
+        regPassword: "Password (min. 6 characters)",
+        regPasswordConfirm: "Confirm Password",
+        btnRegister: "Create Account & Start Plan",
+        haveAccount: "Already registered?",
+        switchLogin: "Sign in here",
+        pwdMismatch: "Passwords do not match!",
+        regSuccess: "🎉 Registration successful! Redirecting...",
+        loginSuccess: "✅ Signed in successfully! Loading plan..."
+      }
+    };
+
+    function setLanguage(lang) {
+      currentLang = lang === 'en' ? 'en' : 'de';
+      localStorage.setItem('fgsbot_lang', currentLang);
+      document.getElementById('btnLangDe').classList.toggle('active', currentLang === 'de');
+      document.getElementById('btnLangEn').classList.toggle('active', currentLang === 'en');
+      applyLanguage();
+    }
+
+    function applyLanguage() {
+      const t = I18N[currentLang];
+      document.title = t.pageTitle;
+      document.getElementById('uiAuthSub').innerText = t.authSub;
+      document.getElementById('lblBackToApp').innerText = t.backToApp;
+      document.getElementById('lblTabLogin').innerText = t.tabLogin;
+      document.getElementById('lblTabRegister').innerText = t.tabRegister;
+      
+      document.getElementById('lblLoginEmail').innerText = t.loginEmail;
+      document.getElementById('lblLoginPassword').innerText = t.loginPassword;
+      document.getElementById('lblRememberMe').innerText = t.rememberMe;
+      document.getElementById('lblForgotPwd').innerText = t.forgotPwd;
+      document.getElementById('lblBtnLogin').innerText = t.btnLogin;
+      document.getElementById('lblNoAccount').innerText = t.noAccount;
+      document.getElementById('lblSwitchRegister').innerText = t.switchRegister;
+
+      document.getElementById('lblRegName').innerText = t.regName;
+      document.getElementById('lblRegBusiness').innerText = t.regBusiness;
+      document.getElementById('lblRegEmail').innerText = t.regEmail;
+      document.getElementById('lblRegPassword').innerText = t.regPassword;
+      document.getElementById('lblRegPasswordConfirm').innerText = t.regPasswordConfirm;
+      document.getElementById('lblBtnRegister').innerText = t.btnRegister;
+      document.getElementById('lblHaveAccount').innerText = t.haveAccount;
+      document.getElementById('lblSwitchLogin').innerText = t.switchLogin;
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      hideAlert();
+      document.getElementById('tabLoginBtn').classList.toggle('active', tab === 'login');
+      document.getElementById('tabRegisterBtn').classList.toggle('active', tab === 'register');
+      document.getElementById('formLogin').style.display = tab === 'login' ? 'block' : 'none';
+      document.getElementById('formRegister').style.display = tab === 'register' ? 'block' : 'none';
+    }
+
+    function togglePwdVisibility(id) {
+      const input = document.getElementById(id);
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    function showAlert(msg, type = 'danger') {
+      const alertBox = document.getElementById('authAlert');
+      alertBox.className = `alert alert-${type}`;
+      alertBox.innerText = msg;
+      alertBox.style.display = 'block';
+    }
+
+    function hideAlert() {
+      const alertBox = document.getElementById('authAlert');
+      alertBox.style.display = 'none';
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      hideAlert();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const btn = document.getElementById('btnSubmitLogin');
+
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          showAlert(data.error || 'Login failed', 'danger');
+          btn.disabled = false;
+          return;
+        }
+
+        showAlert(I18N[currentLang].loginSuccess, 'success');
+        localStorage.setItem('fgs_user', JSON.stringify(data.user));
+        if (data.sessionId) {
+          localStorage.setItem('fgsbot_session_id', data.sessionId);
+        }
+
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 800);
+      } catch (err) {
+        showAlert('Network error: ' + err.message, 'danger');
+        btn.disabled = false;
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      hideAlert();
+      const name = document.getElementById('regName').value.trim();
+      const businessName = document.getElementById('regBusiness').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value;
+      const confirm = document.getElementById('regPasswordConfirm').value;
+      const btn = document.getElementById('btnSubmitRegister');
+
+      if (password !== confirm) {
+        showAlert(I18N[currentLang].pwdMismatch, 'danger');
+        return;
+      }
+
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password, businessName })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          showAlert(data.error || 'Registration failed', 'danger');
+          btn.disabled = false;
+          return;
+        }
+
+        showAlert(I18N[currentLang].regSuccess, 'success');
+        localStorage.setItem('fgs_user', JSON.stringify(data.user));
+        if (data.sessionId) {
+          localStorage.setItem('fgsbot_session_id', data.sessionId);
+        }
+
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1000);
+      } catch (err) {
+        showAlert('Network error: ' + err.message, 'danger');
+        btn.disabled = false;
+      }
+    }
+
+    // Check URL query parameters (e.g. ?mode=register)
+    window.addEventListener('DOMContentLoaded', () => {
+      setLanguage(currentLang);
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('mode') === 'register') {
+        switchTab('register');
+      }
+    });
+  </script>
+</body>
+</html>

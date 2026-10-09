@@ -5,7 +5,7 @@
 const { ConnectoryFinAssistantSession, FGSBotSession } = require('../../botLogic.js');
 const { calculateFinancialPlan } = require('../../financialEngine.js');
 const { exportPlanToBuffer } = require('../../excelExporter.js');
-const { getSessionFromDb, saveSessionToDb, logChatToDb } = require('../../db.js');
+const { getSessionFromDb, saveSessionToDb, logChatToDb, registerUser, authenticateUser, getUserById } = require('../../db.js');
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -67,6 +67,67 @@ exports.handler = async function (event, context) {
     }
 
     // 3. Route Handling
+    // POST /api/auth/register or /auth/register
+    if (method === 'POST' && (path === '/auth/register' || path === '/register')) {
+      const { name, email, password, businessName } = parsedBody;
+      if (!name || !email || !password) {
+        return jsonResponse(400, { success: false, error: "Name, email and password are required / Name, E-Mail und Passwort sind erforderlich." });
+      }
+      if (password.length < 6) {
+        return jsonResponse(400, { success: false, error: "Password must be at least 6 characters / Passwort muss mindestens 6 Zeichen lang sein." });
+      }
+
+      const result = await registerUser({ name, email, password, businessName });
+      if (!result.success) {
+        return jsonResponse(400, result);
+      }
+
+      if (businessName) {
+        session.customPlanData.umsatzplanung.geschaeftsfeld_1_name = businessName;
+      }
+      await saveSessionToDb(sessionId, session.toJSON());
+
+      return jsonResponse(201, {
+        success: true,
+        user: result.user,
+        sessionId
+      });
+    }
+
+    // POST /api/auth/login or /auth/login
+    if (method === 'POST' && (path === '/auth/login' || path === '/login')) {
+      const { email, password } = parsedBody;
+      if (!email || !password) {
+        return jsonResponse(400, { success: false, error: "Email and password are required / E-Mail und Passwort sind erforderlich." });
+      }
+
+      const result = await authenticateUser(email, password);
+      if (!result.success) {
+        return jsonResponse(401, result);
+      }
+
+      return jsonResponse(200, {
+        success: true,
+        user: result.user,
+        sessionId
+      });
+    }
+
+    // GET /api/auth/me or /auth/me
+    if (method === 'GET' && (path === '/auth/me' || path === '/me')) {
+      const userId = headers['x-user-id'] || headers['X-User-Id'] || query.userId;
+      if (!userId) {
+        return jsonResponse(200, { authenticated: false, user: null });
+      }
+      const user = await getUserById(userId);
+      return jsonResponse(200, { authenticated: !!user, user });
+    }
+
+    // POST /api/auth/logout or /auth/logout
+    if (method === 'POST' && (path === '/auth/logout' || path === '/logout')) {
+      return jsonResponse(200, { success: true, message: "Logged out successfully" });
+    }
+
     // GET /api/init or /init
     if (method === 'GET' && (path === '/init' || path === '/')) {
       const greeting = session.getGreeting();

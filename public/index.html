@@ -859,6 +859,11 @@
       <button class="btn btn-secondary" id="btnLoadPreset" onclick="loadPreset()">⚡ 100k Musterplan laden</button>
       <button class="btn btn-secondary" id="btnReset" onclick="resetPlan()">🔄 Eigenen Plan neu starten</button>
       <button class="btn btn-accent" id="btnExportExcel" onclick="exportExcel()">📥 Excel herunterladen (.xlsx)</button>
+      <a href="/auth.html" class="btn btn-secondary" id="btnHeaderAuth" style="text-decoration:none;">👤 <span id="lblAuthBtn">Anmelden</span></a>
+      <div id="userProfileBadge" style="display:none; align-items:center; gap:6px; background:#19253d; border:1px solid #2d3e5e; padding:5px 10px; border-radius:8px; font-size:12px; font-weight:600;">
+        <span id="userNameDisplay">👤 User</span>
+        <button onclick="handleLogout()" style="background:none; border:none; color:#f87171; cursor:pointer; font-size:13px; font-weight:700; margin-left:4px;" title="Logout">✕</button>
+      </div>
     </div>
   </header>
 
@@ -1202,6 +1207,9 @@
       document.getElementById('btnReset').innerText = t.btnReset;
       document.getElementById('btnExportExcel').innerText = t.btnExport;
       document.getElementById('dockSendText').innerText = t.dock.send;
+      if (document.getElementById('lblAuthBtn')) {
+        document.getElementById('lblAuthBtn').innerText = currentLang === 'en' ? 'Sign In' : 'Anmelden';
+      }
 
       // Goal Seek Card
       if (document.getElementById('uiGoalSeekTitle')) {
@@ -1888,8 +1896,44 @@
       }
     }
 
+    // Auth state handler
+    function checkUserAuth() {
+      const userJson = localStorage.getItem('fgs_user');
+      const authBtn = document.getElementById('btnHeaderAuth');
+      const userBadge = document.getElementById('userProfileBadge');
+      const userNameDisplay = document.getElementById('userNameDisplay');
+
+      if (userJson) {
+        try {
+          const user = JSON.parse(userJson);
+          if (authBtn) authBtn.style.display = 'none';
+          if (userBadge) {
+            userBadge.style.display = 'flex';
+            userNameDisplay.innerText = `👤 ${user.name || user.email}`;
+          }
+          return user;
+        } catch (e) {
+          localStorage.removeItem('fgs_user');
+        }
+      }
+
+      if (authBtn) authBtn.style.display = 'inline-flex';
+      if (userBadge) userBadge.style.display = 'none';
+      return null;
+    }
+
+    async function handleLogout() {
+      localStorage.removeItem('fgs_user');
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+      } catch (e) {}
+      checkUserAuth();
+      window.location.reload();
+    }
+
     // Init App
     async function initApp() {
+      checkUserAuth();
       applyLanguageToUI();
       try {
         const res = await fetch('/api/init', {
