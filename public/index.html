@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FGSBot - Financial Planning Bot / Finanzplanungs-Chatbot</title>
+  <title>ConnectoryFinAssistant - Financial Planning Assistant / Finanzplanungs-Chatbot</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -846,7 +846,7 @@
     <div class="brand">
       <div class="brand-logo">🤖</div>
       <div class="brand-text">
-        <h1 id="uiBrandTitle">FGSBot • Finanzplanungs- & Businessplan-Assistent</h1>
+        <h1 id="uiBrandTitle">ConnectoryFinAssistant</h1>
         <p id="uiBrandSub">Individuelle Finanzplanung & 100k Benchmark-Modell</p>
       </div>
     </div>
@@ -1027,7 +1027,7 @@
     // UI Dictionary for German & English
     const I18N = {
       de: {
-        brandTitle: "FGSBot • Finanzplanungs- & Businessplan-Assistent",
+        brandTitle: "ConnectoryFinAssistant",
         brandSub: "Individuelle Finanzplanung & 100k Benchmark-Modell",
         btnPreset: "⚡ 100k Musterplan laden",
         btnReset: "🔄 Eigenen Plan neu starten",
@@ -1079,7 +1079,7 @@
         resetConfirm: "Finanzplan zurücksetzen und mit einem leeren eigenen Plan neu starten?"
       },
       en: {
-        brandTitle: "FGSBot • Financial & Business Planning Assistant",
+        brandTitle: "ConnectoryFinAssistant",
         brandSub: "Custom Financial Planning & 100k Benchmark Model",
         btnPreset: "⚡ Load 100k Benchmark",
         btnReset: "🔄 Start Own Plan (Reset)",
@@ -1175,7 +1175,7 @@
         });
         const data = await res.json();
         if (data.greeting) {
-          appendMessage('FGSBot', data.greeting.text);
+          appendMessage('ConnectoryFinAssistant', data.greeting.text);
         }
         if (data.currentQuestion) {
           currentQuestion = data.currentQuestion;
@@ -1385,7 +1385,7 @@
         
         if (data.response) {
           const isError = !data.response.success;
-          appendMessage('FGSBot', data.response.text, isError, data.response.errorDetail);
+          appendMessage('ConnectoryFinAssistant', data.response.text, isError, data.response.errorDetail);
         }
 
         if (data.calculation) {
@@ -1402,7 +1402,7 @@
           updateInputDock({ isCompleted: true });
         }
       } catch (err) {
-        appendMessage('FGSBot', '❌ Error / Fehler: ' + err.message);
+        appendMessage('ConnectoryFinAssistant', '❌ Error / Fehler: ' + err.message);
       }
     }
 
@@ -1418,7 +1418,7 @@
         });
         const data = await res.json();
         if (data.response) {
-          appendMessage('FGSBot', data.response.text);
+          appendMessage('ConnectoryFinAssistant', data.response.text);
         }
         if (data.calculation) {
           currentCalculation = data.calculation;
@@ -1449,7 +1449,7 @@
         });
         const data = await res.json();
         if (data.response) {
-          appendMessage('FGSBot', data.response.text);
+          appendMessage('ConnectoryFinAssistant', data.response.text);
         }
         if (data.calculation) {
           currentCalculation = data.calculation;
@@ -1498,7 +1498,7 @@
         });
         const data = await res.json();
         if (data.response) {
-          appendMessage('FGSBot', data.response.text);
+          appendMessage('ConnectoryFinAssistant', data.response.text);
         }
         if (data.calculation) {
           currentCalculation = data.calculation;
@@ -1805,7 +1805,7 @@
         });
         const data = await res.json();
         if (data.response) {
-          appendMessage('FGSBot', data.response.text);
+          appendMessage('ConnectoryFinAssistant', data.response.text);
         }
         if (data.calculation) {
           currentCalculation = data.calculation;
@@ -1832,7 +1832,7 @@
         const data = await res.json();
         document.getElementById('chatMessages').innerHTML = '';
         if (data.response) {
-          appendMessage('FGSBot', data.response.text);
+          appendMessage('ConnectoryFinAssistant', data.response.text);
         }
         if (data.calculation) {
           currentCalculation = data.calculation;
@@ -1875,7 +1875,7 @@
           const a = document.createElement('a');
           a.style.display = 'none';
           a.href = url;
-          a.download = 'Finanzplanung_FGSBot_Export.xlsx';
+          a.download = 'Finanzplanung_ConnectoryFinAssistant_Export.xlsx';
           document.body.appendChild(a);
           a.click();
           setTimeout(() => {
@@ -1900,7 +1900,7 @@
         });
         const data = await res.json();
         if (data.greeting) {
-          appendMessage('FGSBot', data.greeting.text);
+          appendMessage('ConnectoryFinAssistant', data.greeting.text);
         }
         if (data.calculation) {
           currentCalculation = data.calculation;

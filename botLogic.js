@@ -134,10 +134,10 @@ class FGSBotSession {
     if (!q || q.isCompleted) {
       const plan = calculateFinancialPlan(this.customPlanData);
       return {
-        sender: "FGSBot",
+        sender: "ConnectoryFinAssistant",
         text: isEn ?
-          `👋 **Hello! Welcome back to FGSBot.** Your financial plan is currently complete.\nTarget Net Profit: **${formatEuro(plan.summary.netto_gewinn_j1, 'en')}**.\nYou can modify values, reload the benchmark preset, or export the Excel file!` :
-          `👋 **Hallo! Willkommen zurück bei FGSBot.** Deine Finanzplanung ist aktuell vollständig erfasst.\nGewinn nach Steuern: **${formatEuro(plan.summary.netto_gewinn_j1, 'de')}**.\nDu kannst beliebige Werte anpassen, die Benchmark-Vorlage neu laden oder die Excel-Datei exportieren!`,
+          `👋 **Hello! Welcome back to ConnectoryFinAssistant.** Your financial plan is currently complete.\nTarget Net Profit: **${formatEuro(plan.summary.netto_gewinn_j1, 'en')}**.\nYou can modify values, reload the benchmark preset, or export the Excel file!` :
+          `👋 **Hallo! Willkommen zurück bei ConnectoryFinAssistant.** Deine Finanzplanung ist aktuell vollständig erfasst.\nGewinn nach Steuern: **${formatEuro(plan.summary.netto_gewinn_j1, 'de')}**.\nDu kannst beliebige Werte anpassen, die Benchmark-Vorlage neu laden oder die Excel-Datei exportieren!`,
         question: q,
         calculation: plan
       };
@@ -145,8 +145,8 @@ class FGSBotSession {
 
     if (isEn) {
       return {
-        sender: "FGSBot",
-        text: `👋 **Hello! Welcome to FGSBot** – your smart Financial Planning Assistant for startups & business planning!
+        sender: "ConnectoryFinAssistant",
+        text: `👋 **Hello! Welcome to ConnectoryFinAssistant** – your smart Financial Planning Assistant for startups & business planning!
 
 I will guide you step-by-step through all 8 schedules of your customized financial plan:
 
@@ -171,8 +171,8 @@ ${q.question}`,
     }
 
     return {
-      sender: "FGSBot",
-      text: `👋 **Hallo! Willkommen bei FGSBot** – deinem Finanzplanungs-Assistenten für deine Existenzgründung & Businessplanung!
+      sender: "ConnectoryFinAssistant",
+      text: `👋 **Hallo! Willkommen bei ConnectoryFinAssistant** – deinem Finanzplanungs-Assistenten für deine Existenzgründung & Businessplanung!
 
 Ich führe dich Schritt für Schritt durch alle 8 Anlagen deiner individuellen Finanzplanung:
 
@@ -576,5 +576,6 @@ Klicke auf **"Excel herunterladen"**, um deinen fertigen Finanzplan herunterzula
 }
 
 module.exports = {
+  ConnectoryFinAssistantSession: FGSBotSession,
   FGSBotSession
 };

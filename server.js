@@ -1,12 +1,12 @@
 /**
- * FGSBot Web Server - Bilingual (DE / EN) with MongoDB ('zgs') Persistence
+ * ConnectoryFinAssistant Web Server - Bilingual (DE / EN) with MongoDB ('zgs') Persistence
  */
 
 require('dotenv').config();
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { FGSBotSession } = require('./botLogic.js');
+const { ConnectoryFinAssistantSession, FGSBotSession } = require('./botLogic.js');
 const { calculateFinancialPlan } = require('./financialEngine.js');
 const { exportPlanToBuffer, exportPlanToFile } = require('./excelExporter.js');
 const { connectToDatabase, getSessionFromDb, saveSessionToDb, logChatToDb, DB_NAME } = require('./db.js');
