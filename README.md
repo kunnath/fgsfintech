@@ -2,7 +2,7 @@
 
 **FGSBot** is a smart, interactive financial planning assistant built for founders, startups, and businesses to create bank-ready financial plans.
 
-It is 100% modeled after the German master financial plan structure: **`Finanzplanung_2026_PrimeDiet_Care_100k_NettoProfit_updated.xlsx`** and includes all **8 schedules / Anlagen** with live formula calculation and benchmark validation.
+It is 100% modeled after the German master financial plan structure: **`Finanzplanung_2026_PrimeDiet_Care_100k_NettoProfit_updated.xlsx`** and includes all **8 schedules / Anlagen** with live formula calculation, Goal-Seek target net profit solving, pure JavaScript Excel generation, and **MongoDB (`zgs`) persistence**.
 
 ---
 
@@ -15,51 +15,51 @@ FGSBot provides complete bilingual support:
 
 ---
 
-## 📑 The 8 Financial Schedules / Die 8 Anlagen
+## 🎯 Year 1 Net Profit Target & Goal-Seek (Ziel-Nettogewinn)
 
-| # | German (Anlage) | English (Schedule) | Core Business Inputs & Calculations |
-| :---: | :--- | :--- | :--- |
-| **1** | **Investitionen** | **Capital Expenditures (CapEx)** | Office & IT equipment (laptops, branding, website), low-value assets, machinery -> **Total Investments**. |
-| **2** | **Betriebskosten** | **Operating Expenses (OpEx)** | Office rent, cloud hosting, marketing, accounting/tax, insurance + one-off launch costs (notary, deposit, reserve). |
-| **3** | **Privater Aufwand** | **Owner's Living Draw** | Personal living costs, housing, health insurance, retirement provision -> **Minimum Owner Draw**. |
-| **4** | **Ertragsplanung** | **Revenue & Profit Plan (P&L)** | Core offering, Month 1 launch revenue, Month 12 target, COGS %, Year 2 & 3 revenue -> **Operating Profit (EBITDA)**. |
-| **5** | **Finanzbedarf** | **Capital Requirements & Financing** | Working capital Q1 + Investments = **Total Capital Needed**, founder equity, bank loans, grants. |
-| **6** | **Rentabilitätsvorschau** | **Profitability Forecast (3 Years)** | Revenue, OpEx, pre-tax profit (EBT), 27.32% income tax -> **Benchmark: 100,000 € Net Profit Target**. |
-| **7** | **Liquiditätsplanung** | **Cash Flow & Liquidity Plan** | Quarterly cash flow (Q1 to Q4): Operating profit ./. investments ./. owner draw ./. VAT = **Cumulative Cash Reserve**. |
-| **8** | **MwSt-Ermittlung** | **VAT & Sales Tax Balance** | 19% Output VAT on revenue ./. 19% Input VAT on expenses/CapEx -> **Quarterly VAT Payable**. |
+- Set any target net profit for Year 1 (e.g. `100k €`, `80k €`, `120k €`, `150k €`).
+- The system automatically reverse-engineers the required revenue and generates the 12-month growth curve to reach the exact target profit after taxes and operating expenses.
 
 ---
 
-## 🌟 Key Features / Hauptfunktionen
+## 🍃 MongoDB Database Integration (`zgs`)
 
-1. **Ultra-Visible Persistent Input Dock:**
-   - Fixed at the bottom of the chat panel with a bright blue 3px accent line and glowing shadow.
-   - Large input field with `€` prefix, 16px high-contrast text, and a prominent **"Send / Senden ➔"** button.
-   - One-click quick presets: `[ ⭐ Accept: 2,300 € ]`, `[ 0 € (None) ]`, `[ - 500 € ]`, `[ + 500 € ]`, `[ ⬅ Back ]`, `[ ⏩ Next ]`.
-
-2. **Smart Natural Language Input & Number Extraction:**
-   - Understands sentences like `"I need about 2,500 EUR for laptops"`, `"ca. 2000"`, `"100k"`, `"50k"`, `"none"`, `"keine"`.
-
-3. **Validation with Helpful Errors & Concrete Examples:**
-   - If an input is invalid, FGSBot explains the reason and provides an exact working example.
-
-4. **1-Click Populated Excel Export (`.xlsx`):**
-   - Updates the original template with your exact numbers and downloads the finished Excel spreadsheet.
+- **Session Persistence:** Saves all user financial inputs, current questionnaire state, and calculations across browser reloads and device switches into the `sessions` collection in MongoDB (`zgs`).
+- **Chat Logs:** Automatically records user prompts, goal-seek adjustments, and bot responses into the `chat_logs` collection in MongoDB (`zgs`).
 
 ---
 
-## 🚀 Quickstart / Schnellstart
+## ☁️ Netlify Deployment Guide
+
+This project is configured for 1-click deployment on Netlify using Netlify Functions (Serverless API) and Netlify Static Hosting.
+
+### 1. Configuration Files
+- **`netlify.toml`**: Configures the publish directory (`public`), serverless functions directory (`netlify/functions`), build settings, and API redirects (`/api/*` -> `/.netlify/functions/api/:splat`).
+- **`netlify/functions/api.js`**: Complete serverless API handler with MongoDB `zgs` connection, session persistence, and pure JS Excel generation.
+
+### 2. Environment Variables in Netlify
+In your Netlify Site Dashboard:
+1. Go to **Site Configuration** ➔ **Environment variables**.
+2. Add the variable:
+   - **`MONGO_URI`**: `mongodb+srv://<username>:<password>@cluster0.9gysv6t.mongodb.net/zgs?retryWrites=true&w=majority`
+
+### 3. Deploy to Netlify
+- Push this repository to GitHub/GitLab/Bitbucket and connect it to Netlify, or run:
+  ```bash
+  netlify deploy --prod
+  ```
+
+---
+
+## 🚀 Local Development / Schnellstart
 
 ```bash
-cd /Users/kunnath/projects/zgsbot
+# Install dependencies
+npm install
+
+# Start local server with MongoDB
 node server.js
 ```
 
 Open your browser at:
 👉 **http://localhost:3000**
-
-### Terminal CLI Mode:
-```bash
-node cli.js
-```
-# fgsfintech

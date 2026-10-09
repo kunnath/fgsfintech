@@ -1,13 +1,25 @@
 {
   "name": "zgsbot",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "FGSBot - Bilingual Financial Planning Chatbot with MongoDB persistence",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "node server.js",
+    "build": "echo 'Assets ready in public/'"
   },
-  "keywords": [],
+  "keywords": [
+    "financial-planning",
+    "chatbot",
+    "netlify",
+    "mongodb"
+  ],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^18.0.6",
+    "exceljs": "^4.4.0",
+    "mongodb": "^7.7.0"
+  }
 }

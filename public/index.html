@@ -697,38 +697,71 @@
       flex-wrap: wrap;
     }
 
-    .goal-seek-preview strong {
-      color: #38bdf8;
-      font-family: 'JetBrains Mono', monospace;
+    /* Tabs Header Bar */
+    .sheet-tabs-container {
+      flex: 0 0 auto;
+      background: #0f192c;
+      border: 1.5px solid #2d426d;
+      border-radius: var(--radius-md);
+      padding: 6px 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+      scrollbar-width: thin;
+      scrollbar-color: #3b82f6 #0f192c;
     }
 
-    /* Tabs */
-    .sheet-tabs-container {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 4px;
-      display: flex;
-      gap: 4px;
-      overflow-x: auto;
+    .sheet-tabs-container::-webkit-scrollbar {
+      height: 5px;
+    }
+
+    .sheet-tabs-container::-webkit-scrollbar-track {
+      background: #0d1526;
+      border-radius: 3px;
+    }
+
+    .sheet-tabs-container::-webkit-scrollbar-thumb {
+      background: #33476d;
+      border-radius: 3px;
+    }
+
+    .sheet-tabs-container::-webkit-scrollbar-thumb:hover {
+      background: #3b82f6;
     }
 
     .sheet-tab-btn {
-      padding: 6px 12px;
-      background: transparent;
-      border: none;
-      color: #94a3b8;
+      padding: 7px 13px;
+      background: #18243b;
+      border: 1px solid #2b3d61;
+      color: #cbd5e1;
       font-size: 12px;
       font-weight: 600;
-      border-radius: var(--radius-sm);
+      border-radius: 8px;
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.15s ease;
       font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
     }
 
-    .sheet-tab-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
-    .sheet-tab-btn.active { background: #3b82f6; color: #fff; }
+    .sheet-tab-btn:hover {
+      color: #ffffff;
+      background: #233454;
+      border-color: #3b82f6;
+      transform: translateY(-1px);
+    }
+
+    .sheet-tab-btn.active {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #ffffff;
+      border-color: #60a5fa;
+      font-weight: 700;
+      box-shadow: 0 2px 10px rgba(37, 99, 235, 0.5);
+    }
 
     /* Tables */
     .sheet-content-panel {
@@ -1826,11 +1859,29 @@
             'X-Lang': currentLang
           }
         });
-        const data = await res.json();
-        if (data.success && data.downloadUrl) {
-          window.location.href = data.downloadUrl;
+        
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await res.json();
+          if (data.downloadUrl) {
+            window.location.href = data.downloadUrl;
+          } else {
+            alert('Export failed / fehlgeschlagen: ' + (data.details || data.error));
+          }
         } else {
-          alert('Excel Export failed / fehlgeschlagen: ' + (data.details || data.error));
+          // Binary blob download
+          const blob = await res.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = 'Finanzplanung_FGSBot_Export.xlsx';
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            window.URL.revokeObjectURL(url);
+            a.remove();
+          }, 1000);
         }
       } catch (err) {
         alert('Download Error: ' + err.message);

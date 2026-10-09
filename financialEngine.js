@@ -526,7 +526,7 @@ function solveRevenueForNetProfit(targetNetProfit, customData = {}) {
     runningSum += rounded;
   }
   // Month 12 absorbs the exact difference so the sum equals requiredAnnualRevenue (rounded to integer)
-  const targetAnnualInt = Math.round(requiredAnnualRevenue);
+  const targetAnnualInt = Math.ceil(requiredAnnualRevenue);
   const month12Val = Math.max(0, targetAnnualInt - runningSum);
   monthlyRevenues.push(month12Val);
 

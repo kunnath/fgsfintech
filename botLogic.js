@@ -23,6 +23,25 @@ class FGSBotSession {
     this.isCompleted = false;
   }
 
+  toJSON() {
+    return {
+      lang: this.lang,
+      currentQuestionIndex: this.currentQuestionIndex,
+      userAnswers: this.userAnswers,
+      customPlanData: this.customPlanData,
+      isCompleted: this.isCompleted
+    };
+  }
+
+  fromJSON(json) {
+    if (!json) return;
+    if (json.lang) this.lang = json.lang;
+    if (json.currentQuestionIndex !== undefined) this.currentQuestionIndex = json.currentQuestionIndex;
+    if (json.userAnswers) this.userAnswers = json.userAnswers;
+    if (json.customPlanData) this.customPlanData = json.customPlanData;
+    if (json.isCompleted !== undefined) this.isCompleted = json.isCompleted;
+  }
+
   setNetProfitTarget(targetAmount, autoScaleRevenue = true) {
     const isEn = this.lang === 'en';
     const num = typeof targetAmount === 'number' ? targetAmount : parseNumericInput(targetAmount);

@@ -1,31 +1,41 @@
 /**
- * FGSBot Web Server - Bilingual (DE / EN)
+ * FGSBot Web Server - Bilingual (DE / EN) with MongoDB ('zgs') Persistence
  */
 
+require('dotenv').config();
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { execFile } = require('child_process');
 const { FGSBotSession } = require('./botLogic.js');
 const { calculateFinancialPlan } = require('./financialEngine.js');
+const { exportPlanToBuffer, exportPlanToFile } = require('./excelExporter.js');
+const { connectToDatabase, getSessionFromDb, saveSessionToDb, logChatToDb, DB_NAME } = require('./db.js');
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
-const sessions = new Map();
+const inMemorySessions = new Map();
 
-function getSession(req) {
+async function getSession(req) {
   const urlObj = new URL(req.url, `http://${req.headers.host}`);
   const sessionId = req.headers['x-session-id'] || urlObj.searchParams.get('session') || 'default';
   const lang = req.headers['x-lang'] || urlObj.searchParams.get('lang') || 'de';
-  if (!sessions.has(sessionId)) {
-    sessions.set(sessionId, new FGSBotSession(lang));
+
+  if (!inMemorySessions.has(sessionId)) {
+    const session = new FGSBotSession(lang);
+    // Attempt to restore from MongoDB
+    const dbData = await getSessionFromDb(sessionId);
+    if (dbData) {
+      session.fromJSON(dbData);
+    }
+    inMemorySessions.set(sessionId, session);
   }
-  const s = sessions.get(sessionId);
+
+  const s = inMemorySessions.get(sessionId);
   if (lang) {
     s.setLanguage(lang);
   }
-  return s;
+  return { session: s, sessionId };
 }
 
 const MIME_TYPES = {
@@ -43,12 +53,13 @@ function sendJson(res, statusCode, data) {
   res.writeHead(statusCode, {
     'Content-Type': 'application/json; charset=utf-8',
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, X-Session-ID, X-Lang'
+    'Access-Control-Allow-Headers': 'Content-Type, X-Session-ID, X-Lang',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
   });
   res.end(JSON.stringify(data));
 }
 
-function handleApiRequest(req, res, pathname) {
+async function handleApiRequest(req, res, pathname) {
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
@@ -58,13 +69,15 @@ function handleApiRequest(req, res, pathname) {
     return res.end();
   }
 
-  const session = getSession(req);
+  const { session, sessionId } = await getSession(req);
 
   // GET /api/init
   if (req.method === 'GET' && pathname === '/api/init') {
     try {
       const greeting = session.getGreeting();
       const calculation = session.getCalculatedState();
+      await saveSessionToDb(sessionId, session.toJSON());
+
       return sendJson(res, 200, {
         greeting,
         calculation,
@@ -82,13 +95,15 @@ function handleApiRequest(req, res, pathname) {
   if (req.method === 'POST' && pathname === '/api/set-language') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const payload = JSON.parse(body || '{}');
         const lang = payload.lang === 'en' ? 'en' : 'de';
         session.setLanguage(lang);
         const greeting = session.getGreeting();
         const calculation = session.getCalculatedState();
+        await saveSessionToDb(sessionId, session.toJSON());
+
         return sendJson(res, 200, {
           success: true,
           lang: session.lang,
@@ -120,12 +135,16 @@ function handleApiRequest(req, res, pathname) {
   if (req.method === 'POST' && pathname === '/api/chat') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const payload = JSON.parse(body || '{}');
         const userMessage = payload.message || '';
         const botResponse = session.processMessage(userMessage);
         const calculation = session.getCalculatedState();
+
+        await saveSessionToDb(sessionId, session.toJSON());
+        await logChatToDb(sessionId, userMessage, botResponse, calculation.summary);
+
         return sendJson(res, 200, {
           response: botResponse,
           calculation,
@@ -140,29 +159,21 @@ function handleApiRequest(req, res, pathname) {
     return;
   }
 
-  // POST /api/back
-  if (req.method === 'POST' && pathname === '/api/back') {
-    const botResponse = session.stepBack();
-    const calculation = session.getCalculatedState();
-    return sendJson(res, 200, {
-      response: botResponse,
-      calculation,
-      currentQuestion: session.getCurrentQuestion(),
-      isCompleted: session.isCompleted,
-      lang: session.lang
-    });
-  }
-
-  // POST /api/jump-sheet
-  if (req.method === 'POST' && pathname === '/api/jump-sheet') {
+  // POST /api/set-net-profit-target
+  if (req.method === 'POST' && pathname === '/api/set-net-profit-target') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const payload = JSON.parse(body || '{}');
-        const sheetNum = payload.sheetNum || 1;
-        const botResponse = session.jumpToSheet(sheetNum);
+        const target = payload.target !== undefined ? payload.target : payload.targetNetProfit;
+        const autoScale = payload.autoScale !== false && payload.autoScaleRevenue !== false;
+        const botResponse = session.setNetProfitTarget(target, autoScale);
         const calculation = session.getCalculatedState();
+
+        await saveSessionToDb(sessionId, session.toJSON());
+        await logChatToDb(sessionId, `[Goal-Seek: ${target}]`, botResponse, calculation.summary);
+
         return sendJson(res, 200, {
           response: botResponse,
           calculation,
@@ -177,17 +188,33 @@ function handleApiRequest(req, res, pathname) {
     return;
   }
 
-  // POST /api/set-net-profit-target
-  if (req.method === 'POST' && pathname === '/api/set-net-profit-target') {
+  // POST /api/back
+  if (req.method === 'POST' && pathname === '/api/back') {
+    const botResponse = session.stepBack();
+    const calculation = session.getCalculatedState();
+    await saveSessionToDb(sessionId, session.toJSON());
+
+    return sendJson(res, 200, {
+      response: botResponse,
+      calculation,
+      currentQuestion: session.getCurrentQuestion(),
+      isCompleted: session.isCompleted,
+      lang: session.lang
+    });
+  }
+
+  // POST /api/jump-sheet
+  if (req.method === 'POST' && pathname === '/api/jump-sheet') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const payload = JSON.parse(body || '{}');
-        const target = payload.target !== undefined ? payload.target : payload.targetNetProfit;
-        const autoScale = payload.autoScale !== false && payload.autoScaleRevenue !== false;
-        const botResponse = session.setNetProfitTarget(target, autoScale);
+        const sheetNum = payload.sheetNum || 1;
+        const botResponse = session.jumpToSheet(sheetNum);
         const calculation = session.getCalculatedState();
+        await saveSessionToDb(sessionId, session.toJSON());
+
         return sendJson(res, 200, {
           response: botResponse,
           calculation,
@@ -206,6 +233,8 @@ function handleApiRequest(req, res, pathname) {
   if (req.method === 'POST' && pathname === '/api/preset') {
     const botResponse = session.processMessage('preset');
     const calculation = session.getCalculatedState();
+    await saveSessionToDb(sessionId, session.toJSON());
+
     return sendJson(res, 200, {
       response: botResponse,
       calculation,
@@ -220,6 +249,8 @@ function handleApiRequest(req, res, pathname) {
     session.reset();
     const greeting = session.getGreeting();
     const calculation = session.getCalculatedState();
+    await saveSessionToDb(sessionId, session.toJSON());
+
     return sendJson(res, 200, {
       response: greeting,
       calculation,
@@ -229,24 +260,21 @@ function handleApiRequest(req, res, pathname) {
     });
   }
 
-  // POST /api/export-excel
-  if (req.method === 'POST' && pathname === '/api/export-excel') {
-    const jsonPath = path.join(__dirname, `export_${Date.now()}.json`);
-    const exportData = session.customPlanData;
-    fs.writeFileSync(jsonPath, JSON.stringify(exportData, null, 2), 'utf-8');
-
-    execFile('python3', [path.join(__dirname, 'excelExporter.py'), jsonPath], (error, stdout, stderr) => {
-      if (fs.existsSync(jsonPath)) fs.unlinkSync(jsonPath);
-
-      if (error) {
-        return sendJson(res, 500, { error: "Export failed", details: stderr || error.message });
-      }
-      return sendJson(res, 200, {
-        success: true,
-        downloadUrl: '/Finanzplanung_FGSBot_Export.xlsx'
+  // POST or GET /api/export-excel
+  if (pathname === '/api/export-excel') {
+    try {
+      const buffer = await exportPlanToBuffer(session.customPlanData);
+      res.writeHead(200, {
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': 'attachment; filename="Finanzplanung_FGSBot_Export.xlsx"',
+        'Content-Length': buffer.length,
+        'Access-Control-Allow-Origin': '*'
       });
-    });
-    return;
+      return res.end(buffer);
+    } catch (exportErr) {
+      console.error('Export error:', exportErr);
+      return sendJson(res, 500, { error: "Export failed", details: exportErr.message });
+    }
   }
 
   return sendJson(res, 404, { error: "API endpoint not found" });
@@ -287,11 +315,15 @@ const server = http.createServer((req, res) => {
   });
 });
 
-function startServer(port) {
+async function startServer(port) {
+  // Initialize MongoDB connection
+  await connectToDatabase();
+
   server.listen(port, () => {
     console.log(`====================================================`);
     console.log(`🤖 FGSBot Financial Planning Server is RUNNING!`);
     console.log(`🌐 Web UI: http://localhost:${port}`);
+    console.log(`🍃 Database: MongoDB ('${DB_NAME}')`);
     console.log(`🌍 Languages: 🇩🇪 Deutsch | 🇬🇧 English`);
     console.log(`📊 Benchmark: 100k NettoProfit (PrimeDiet Care Modell)`);
     console.log(`====================================================`);
