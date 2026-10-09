@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FGSBot - Financial Planning Bot / Finanzplanungs-Chatbot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #080c16;
+      --bg-surface: #0f172a;
+      --bg-card: #131c31;
+      --bg-card-hover: #1a2642;
+      --bg-chat-bot: #141e34;
+      --bg-chat-user: #1e3a8a;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --accent-glow: rgba(16, 185, 129, 0.25);
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #1e293b;
+      --border-light: #334155;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100vh;
+      max-height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      line-height: 1.5;
+    }
+
+    /* Top App Header (Fixed 60px) */
+    header {
+      flex: 0 0 60px;
+      height: 60px;
+      background: #0f172a;
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 2px 10px rgba(59, 130, 246, 0.4);
+    }
+
+    .brand-text h1 {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      background: linear-gradient(90deg, #60a5fa, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text p {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Language Switcher Toggle */
+    .lang-switcher {
+      display: flex;
+      background: #19253d;
+      border: 1px solid #2d3e5e;
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+      margin-right: 4px;
+    }
+
+    .lang-btn {
+      padding: 5px 9px;
+      font-size: 11.5px;
+      font-weight: 700;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .lang-btn:hover {
+      color: #fff;
+    }
+
+    .lang-btn.active {
+      background: #3b82f6;
+      color: #fff;
+      box-shadow: 0 1px 6px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn {
+      padding: 7px 13px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      border-color: var(--border-light);
+      color: var(--text-main);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-card-hover);
+      border-color: #475569;
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+
+    .btn-accent:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Main Container (Fills 100% remaining space) */
+    .app-container {
+      flex: 1 1 auto;
+      height: calc(100vh - 60px);
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 520px 1fr;
+      overflow: hidden;
+    }
+
+    /* Left Chat Section */
+    .chat-section {
+      background: #090e1a;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Sheet Navigation Pills Bar */
+    .sheet-nav-bar {
+      flex: 0 0 auto;
+      padding: 8px 12px;
+      background: #0d1526;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+    }
+    .sheet-nav-bar::-webkit-scrollbar { display: none; }
+
+    .nav-pill {
+      padding: 5px 10px;
+      background: #19253d;
+      border: 1px solid #2d3e5e;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    .nav-pill:hover {
+      color: #fff;
+      background: #2563eb;
+      border-color: #3b82f6;
+    }
+
+    .nav-pill.active {
+      background: #3b82f6;
+      color: #fff;
+      border-color: #60a5fa;
+      font-weight: 700;
+    }
+
+    /* Chat Messages Stream */
+    .chat-messages {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scroll-behavior: smooth;
+    }
+
+    .chat-messages::-webkit-scrollbar { width: 6px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+
+    .message {
+      display: flex;
+      gap: 10px;
+      max-width: 98%;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .message.bot .message-avatar {
+      background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+    }
+
+    .message.user .message-avatar {
+      background: #3b82f6;
+    }
+
+    .message-bubble {
+      padding: 12px 15px;
+      border-radius: var(--radius-md);
+      font-size: 13.5px;
+      line-height: 1.55;
+    }
+
+    .message.bot .message-bubble {
+      background: var(--bg-chat-bot);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-top-left-radius: 4px;
+      color: #f1f5f9;
+    }
+
+    .message.user .message-bubble {
+      background: var(--bg-chat-user);
+      border: 1px solid rgba(96, 165, 250, 0.3);
+      border-top-right-radius: 4px;
+      color: #fff;
+    }
+
+    /* Error card inside message */
+    .error-card {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      margin-top: 8px;
+    }
+
+    .error-card .err-title {
+      color: #fca5a5;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .error-card .err-hint {
+      color: #e2e8f0;
+      font-size: 12px;
+    }
+
+    .error-card .err-example {
+      color: #38bdf8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 6px;
+    }
+
+    /* ==================================================== */
+    /* PERSISTENT ULTRA-VISIBLE CHAT INPUT DOCK (FIXED AT BOTTOM) */
+    /* ==================================================== */
+    .chat-input-dock {
+      flex: 0 0 auto;
+      background: #0f182c;
+      border-top: 3px solid #3b82f6;
+      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.6);
+      padding: 12px 14px 14px 14px;
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .dock-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+
+    .dock-title-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #60a5fa;
+      font-weight: 700;
+    }
+
+    .dock-pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulseAnim 2s infinite;
+    }
+
+    @keyframes pulseAnim {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+
+    .dock-helper {
+      color: #94a3b8;
+      font-size: 11px;
+    }
+
+    .dock-presets-row {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+    .dock-presets-row::-webkit-scrollbar { display: none; }
+
+    .dock-preset-btn {
+      background: #1c2942;
+      border: 1px solid #33476d;
+      color: #93c5fd;
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .dock-preset-btn:hover {
+      background: #2563eb;
+      color: #fff;
+      border-color: #3b82f6;
+    }
+
+    .dock-preset-btn.recommended {
+      background: rgba(16, 185, 129, 0.18);
+      border-color: rgba(16, 185, 129, 0.45);
+      color: #34d399;
+      font-weight: 700;
+    }
+
+    .dock-preset-btn.recommended:hover {
+      background: #10b981;
+      color: #fff;
+    }
+
+    .dock-preset-btn.btn-back {
+      background: #1a2233;
+      border-color: #2e3b52;
+      color: #cbd5e1;
+    }
+
+    .dock-preset-btn.btn-back:hover {
+      background: #334155;
+      color: #fff;
+    }
+
+    .dock-input-form {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #19253d;
+      border: 2px solid #3b82f6;
+      border-radius: 12px;
+      padding: 4px 6px 4px 12px;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .dock-currency-icon {
+      font-size: 18px;
+      font-weight: 800;
+      color: #60a5fa;
+      user-select: none;
+    }
+
+    .dock-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+    }
+
+    .dock-input::placeholder {
+      color: #94a3b8;
+      font-weight: 500;
+      font-size: 13.5px;
+    }
+
+    .dock-send-btn {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #fff;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 9px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      font-family: inherit;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+    }
+
+    .dock-send-btn:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.6);
+    }
+
+    /* Right Dashboard Section */
+    .dashboard-section {
+      background: #080c14;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow-y: auto;
+      padding: 16px 20px;
+      gap: 16px;
+    }
+
+    .dashboard-section::-webkit-scrollbar { width: 8px; }
+    .dashboard-section::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+
+    /* Top 6 KPI Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+
+    .kpi-card.highlight {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%);
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .kpi-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .kpi-value {
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      margin: 6px 0 2px 0;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .kpi-card.highlight .kpi-value { color: #34d399; }
+    .kpi-sub { font-size: 11px; color: #94a3b8; }
+
+    .badge-target {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    /* Goal Seek Control Card */
+    .goal-seek-card {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(59, 130, 246, 0.12) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .goal-seek-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 700;
+      color: #60a5fa;
+    }
+
+    .goal-seek-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #93c5fd;
+    }
+
+    .goal-seek-body {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .goal-seek-input-wrapper {
+      display: flex;
+      align-items: center;
+      background: #111a2e;
+      border: 1.5px solid #3b82f6;
+      border-radius: 8px;
+      padding: 2px 8px;
+      width: 160px;
+    }
+
+    .goal-seek-input-wrapper span {
+      color: #60a5fa;
+      font-weight: 700;
+      font-size: 13px;
+      margin-right: 4px;
+    }
+
+    .goal-seek-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px;
+      outline: none;
+    }
+
+    .goal-seek-btn {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+      border: none;
+      padding: 6px 13px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      font-family: inherit;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .goal-seek-btn:hover {
+      background: #10b981;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5);
+    }
+
+    .goal-seek-pills {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .goal-seek-pill {
+      background: #19253d;
+      border: 1px solid #2e3e5c;
+      color: #94a3b8;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .goal-seek-pill:hover {
+      color: #fff;
+      border-color: #3b82f6;
+      background: #2563eb;
+    }
+
+    .goal-seek-pill.active {
+      color: #34d399;
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.2);
+      font-weight: 700;
+    }
+
+    .goal-seek-preview {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      color: #cbd5e1;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      flex-wrap: wrap;
+    }
+
+    .goal-seek-preview strong {
+      color: #38bdf8;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Tabs */
+    .sheet-tabs-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+    }
+
+    .sheet-tab-btn {
+      padding: 6px 12px;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .sheet-tab-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
+    .sheet-tab-btn.active { background: #3b82f6; color: #fff; }
+
+    /* Tables */
+    .sheet-content-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .sheet-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    .sheet-header-row h2 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .table-responsive { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      text-align: left;
+      padding: 8px 12px;
+      background: #172131;
+      color: #94a3b8;
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th.num, td.num {
+      text-align: right;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #1e293b;
+      color: #cbd5e1;
+    }
+
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    tr.total-row td {
+      font-weight: 700;
+      color: #fff;
+      background: rgba(59, 130, 246, 0.1);
+      border-top: 2px solid #3b82f6;
+    }
+
+    tr.highlight-row td {
+      font-weight: 700;
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.1);
+      border-top: 2px solid #10b981;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">🤖</div>
+      <div class="brand-text">
+        <h1 id="uiBrandTitle">FGSBot • Finanzplanungs-Assistent</h1>
+        <p id="uiBrandSub">Finanzplanung 2026 PrimeDiet Care (100k NettoProfit Modell)</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <!-- Language Switcher -->
+      <div class="lang-switcher">
+        <button class="lang-btn active" id="langBtnDe" onclick="setLanguage('de')">🇩🇪 DE</button>
+        <button class="lang-btn" id="langBtnEn" onclick="setLanguage('en')">🇬🇧 EN</button>
+      </div>
+      <button class="btn btn-secondary" id="btnLoadPreset" onclick="loadPreset()">⚡ 100k Vorlage laden</button>
+      <button class="btn btn-secondary" id="btnReset" onclick="resetPlan()">🔄 Neu starten</button>
+      <button class="btn btn-accent" id="btnExportExcel" onclick="exportExcel()">📥 Excel herunterladen (.xlsx)</button>
+    </div>
+  </header>
+
+  <!-- App Main Grid -->
+  <div class="app-container">
+    
+    <!-- Left Chat Interface -->
+    <section class="chat-section">
+      <!-- Sheet Navigation Pills -->
+      <div class="sheet-nav-bar" id="sheetNavBar">
+        <button class="nav-pill active" onclick="jumpToSheet(1)" id="navPill1">1. Investitionen</button>
+        <button class="nav-pill" onclick="jumpToSheet(2)" id="navPill2">2. Betriebskosten</button>
+        <button class="nav-pill" onclick="jumpToSheet(3)" id="navPill3">3. Unternehmerlohn</button>
+        <button class="nav-pill" onclick="jumpToSheet(4)" id="navPill4">4. Ertragsplan</button>
+        <button class="nav-pill" onclick="jumpToSheet(5)" id="navPill5">5. Finanzbedarf</button>
+        <button class="nav-pill" onclick="jumpToSheet(6)" id="navPill6">6. Rentabilität</button>
+        <button class="nav-pill" onclick="jumpToSheet(7)" id="navPill7">7. Liquidität</button>
+        <button class="nav-pill" onclick="jumpToSheet(8)" id="navPill8">8. MwSt</button>
+      </div>
+
+      <!-- Messages Stream -->
+      <div class="chat-messages" id="chatMessages">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- ULTRA-VISIBLE PERSISTENT INPUT DOCK AT BOTTOM -->
+      <div class="chat-input-dock">
+        <!-- Dock Header Status -->
+        <div class="dock-header">
+          <div class="dock-title-badge">
+            <div class="dock-pulse-dot"></div>
+            <span id="dockQuestionTitle">Lade aktuelle Frage...</span>
+          </div>
+          <div class="dock-helper" id="dockQuestionHelper">Tippe den Betrag oder nutze die Buttons</div>
+        </div>
+
+        <!-- Dock Quick Action Presets -->
+        <div class="dock-presets-row" id="dockPresetsRow">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Main Big Input Bar -->
+        <form class="dock-input-form" onsubmit="handleDockSubmit(event)">
+          <span class="dock-currency-icon">€</span>
+          <input type="text" id="dockInput" class="dock-input" placeholder="Betrag eingeben (z.B. 2500) oder Buttons oben klicken..." autocomplete="off">
+          <button type="submit" class="dock-send-btn" id="dockSendBtn">
+            <span id="dockSendText">Senden</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Right Live Dashboard -->
+    <section class="dashboard-section">
+      <!-- Top 6 KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card highlight">
+          <div class="kpi-title">
+            <span id="kpiLabelNetProfit">Gewinn n. Steuer</span>
+            <span class="badge-target" id="kpiTargetBadge">100k Ziel</span>
+          </div>
+          <div class="kpi-value" id="kpiNetProfit">100.000 €</div>
+          <div class="kpi-sub" id="kpiSubNetProfit">Plan: Jahr 1</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title" id="kpiLabelInvest">Investitionen</div>
+          <div class="kpi-value" id="kpiInvest">3.500 €</div>
+          <div class="kpi-sub" id="kpiSubInvest">Anlage 1 gesamt</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title" id="kpiLabelOpex">Fixkosten / Mtl.</div>
+          <div class="kpi-value" id="kpiOpex">1.410 €</div>
+          <div class="kpi-sub" id="kpiOpexSub">16.920 € / Jahr</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title" id="kpiLabelOwnerPay">Unternehmerlohn</div>
+          <div class="kpi-value" id="kpiOwnerPay">2.765 €</div>
+          <div class="kpi-sub" id="kpiSubOwnerPay">Privatbedarf / Mtl.</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title" id="kpiLabelRevY1">Umsatz Jahr 1</div>
+          <div class="kpi-value" id="kpiRevY1">154.510 €</div>
+          <div class="kpi-sub" id="kpiSubRevY1">Nettoumsatz</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title" id="kpiLabelLiquidity">Liquidität Q4</div>
+          <div class="kpi-value" id="kpiLiquidity">112.019 €</div>
+          <div class="kpi-sub" id="kpiSubLiquidity">Kumulierte Reserve</div>
+        </div>
+      </div>
+
+      <!-- Goal Seek / Target Net Profit Control Card -->
+      <div class="goal-seek-card">
+        <div class="goal-seek-header">
+          <div class="goal-seek-title">
+            <span>🎯</span>
+            <span id="uiGoalSeekTitle">Ziel-Nettogewinn Jahr 1 (Goal-Seek)</span>
+          </div>
+          <span style="font-size:11px; color:#94a3b8;" id="uiGoalSeekSub">Berechnet automatisch den nötigen Umsatzverlauf</span>
+        </div>
+        <div class="goal-seek-body">
+          <div class="goal-seek-input-wrapper">
+            <span>€</span>
+            <input type="text" id="goalSeekInput" class="goal-seek-input" value="100000" placeholder="100000" onkeydown="if(event.key==='Enter') executeGoalSeek()">
+          </div>
+          <button class="goal-seek-btn" onclick="executeGoalSeek()" id="btnExecuteGoalSeek">
+            ⚡ <span id="uiGoalSeekBtnText">Umsatz berechnen</span>
+          </button>
+          <div class="goal-seek-pills">
+            <button class="goal-seek-pill" onclick="setGoalSeekVal(50000)">50k €</button>
+            <button class="goal-seek-pill" onclick="setGoalSeekVal(75000)">75k €</button>
+            <button class="goal-seek-pill active" onclick="setGoalSeekVal(100000)" id="pill100k">100k €</button>
+            <button class="goal-seek-pill" onclick="setGoalSeekVal(120000)">120k €</button>
+            <button class="goal-seek-pill" onclick="setGoalSeekVal(150000)">150k €</button>
+            <button class="goal-seek-pill" onclick="setGoalSeekVal(200000)">200k €</button>
+          </div>
+        </div>
+        <div class="goal-seek-preview" id="goalSeekPreview">
+          <span>🎯 <span id="lblPrevNetProfit">Netto-Gewinn:</span> <strong id="valPrevNetProfit">100.000 €</strong></span>
+          <span>📈 <span id="lblPrevReqRev">Nötiger Jahresumsatz:</span> <strong id="valPrevReqRev">154.510 €</strong></span>
+          <span>🚀 <span id="lblPrevRamp">Monat 1 ➔ 12:</span> <strong id="valPrevRamp">8.000 € ➔ 22.010 €</strong></span>
+        </div>
+      </div>
+
+      <!-- Sheet Tabs Header -->
+      <div class="sheet-tabs-container">
+        <button class="sheet-tab-btn active" onclick="switchSheetTab('anl1')" id="tabBtn1">Anl. 1: Investitionen</button>
+        <button class="sheet-tab-btn" onclick="switchSheetTab('anl2')" id="tabBtn2">Anl. 2: Betriebskosten</button>
+        <button class="sheet-tab-btn" onclick="switchSheetTab('anl3')" id="tabBtn3">Anl. 3: Privater Aufwand</button>
+        <button class="sheet-tab-btn" onclick="switchSheetTab('anl4')" id="tabBtn4">Anl. 4: Ertragsplan</button>
+        <button class="sheet-tab-btn" onclick="switchSheetTab('anl5')" id="tabBtn5">Anl. 5: Finanzbedarf</button>
+        <button class="sheet-tab-btn" onclick="switchSheetTab('anl6')" id="tabBtn6">Anl. 6: Rentabilität</button>
+        <button class="sheet-tab-btn" onclick="switchSheetTab('anl7')" id="tabBtn7">Anl. 7: Liquidität</button>
+        <button class="sheet-tab-btn" onclick="switchSheetTab('anl8')" id="tabBtn8">Anl. 8: MwSt</button>
+      </div>
+
+      <!-- Sheet Detail Table Panel -->
+      <div class="sheet-content-panel" id="sheetContentPanel">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    // Language State
+    let currentLang = localStorage.getItem('fgsbot_lang') || 'de';
+
+    // Unique session ID per browser tab
+    let sessionId = localStorage.getItem('fgsbot_session_id');
+    if (!sessionId) {
+      sessionId = 'fgs_' + Math.random().toString(36).substring(2, 9);
+      localStorage.setItem('fgsbot_session_id', sessionId);
+    }
+
+    let currentCalculation = null;
+    let currentQuestion = null;
+    let activeSheetKey = 'anl1';
+
+    // UI Dictionary for German & English
+    const I18N = {
+      de: {
+        brandTitle: "FGSBot • Finanzplanungs-Assistent",
+        brandSub: "Finanzplanung 2026 PrimeDiet Care (100k NettoProfit Modell)",
+        btnPreset: "⚡ 100k Vorlage laden",
+        btnReset: "🔄 Neu starten",
+        btnExport: "📥 Excel herunterladen (.xlsx)",
+        navPills: [
+          "1. Investitionen", "2. Betriebskosten", "3. Unternehmerlohn", "4. Ertragsplan",
+          "5. Finanzbedarf", "6. Rentabilität", "7. Liquidität", "8. MwSt"
+        ],
+        tabs: [
+          "Anl. 1: Investitionen", "Anl. 2: Betriebskosten", "Anl. 3: Privater Aufwand", "Anl. 4: Ertragsplan",
+          "Anl. 5: Finanzbedarf", "Anl. 6: Rentabilität", "Anl. 7: Liquidität", "Anl. 8: MwSt"
+        ],
+        kpiLabels: {
+          netProfit: "Gewinn n. Steuer",
+          targetAchieved: "🎯 Ziel erreicht",
+          targetBelow: "⚠️ Unter Ziel",
+          subNetProfit: "Plan: Jahr 1",
+          invest: "Investitionen",
+          subInvest: "Anlage 1 gesamt",
+          opex: "Fixkosten / Mtl.",
+          ownerPay: "Unternehmerlohn",
+          subOwnerPay: "Privatbedarf / Mtl.",
+          revY1: "Umsatz Jahr 1",
+          subRevY1: "Nettoumsatz",
+          liquidity: "Liquidität Q4",
+          subLiquidity: "Kumulierte Reserve"
+        },
+        goalSeek: {
+          title: "Ziel-Nettogewinn Jahr 1 (Goal-Seek)",
+          sub: "Berechnet automatisch den nötigen Umsatzverlauf",
+          btn: "Umsatz berechnen",
+          lblNetProfit: "Netto-Gewinn:",
+          lblReqRev: "Nötiger Jahresumsatz:",
+          lblRamp: "Monat 1 ➔ 12:"
+        },
+        dock: {
+          loading: "Lade aktuelle Frage...",
+          helper: "Tippe den Betrag oder nutze die Buttons",
+          completed: "✅ Alle 8 Anlagen erfasst!",
+          completedHelper: "Klicke oben auf 'Excel herunterladen' oder wähle eine Anlage",
+          send: "Senden",
+          placeholder: "Betrag eingeben (z.B. 2500) oder Buttons oben klicken...",
+          apply: "⭐ Übernehmen",
+          none: "0 € (Keine)",
+          back: "⬅ Zurück",
+          next: "⏩ Weiter",
+          editInChat: "💬 Im Chat bearbeiten"
+        },
+        resetConfirm: "Finanzplan zurücksetzen und von vorne starten?"
+      },
+      en: {
+        brandTitle: "FGSBot • Financial Planning Assistant",
+        brandSub: "Financial Plan 2026 PrimeDiet Care (100k Net Profit Model)",
+        btnPreset: "⚡ Load 100k Preset",
+        btnReset: "🔄 Restart",
+        btnExport: "📥 Download Excel (.xlsx)",
+        navPills: [
+          "1. Investments", "2. OpEx (Expenses)", "3. Owner's Draw", "4. Revenue Plan",
+          "5. Financing", "6. Profitability", "7. Cash Flow", "8. VAT / Tax"
+        ],
+        tabs: [
+          "App. 1: Investments", "App. 2: OpEx", "App. 3: Owner Draw", "App. 4: P&L Plan",
+          "App. 5: Financing", "App. 6: Profitability", "App. 7: Cash Flow", "App. 8: VAT"
+        ],
+        kpiLabels: {
+          netProfit: "Net Profit",
+          targetAchieved: "🎯 Target Met",
+          targetBelow: "⚠️ Below Target",
+          subNetProfit: "Year 1 Plan",
+          invest: "Investments (CapEx)",
+          subInvest: "App. 1 Total",
+          opex: "Monthly OpEx",
+          ownerPay: "Owner's Draw",
+          subOwnerPay: "Private Living / Mo.",
+          revY1: "Revenue Year 1",
+          subRevY1: "Net Revenue",
+          liquidity: "Year-End Cash",
+          subLiquidity: "Q4 Reserve"
+        },
+        goalSeek: {
+          title: "Year 1 Net Profit Target (Goal-Seek)",
+          sub: "Automatically solves required revenue & ramp",
+          btn: "Auto-Calculate Revenue",
+          lblNetProfit: "Net Profit:",
+          lblReqRev: "Required Revenue:",
+          lblRamp: "Month 1 ➔ 12:"
+        },
+        dock: {
+          loading: "Loading current question...",
+          helper: "Enter amount or click preset buttons",
+          completed: "✅ All 8 schedules complete!",
+          completedHelper: "Click 'Download Excel' above or select any schedule",
+          send: "Send",
+          placeholder: "Enter amount (e.g. 2500) or click buttons above...",
+          apply: "⭐ Accept",
+          none: "0 € (None)",
+          back: "⬅ Back",
+          next: "⏩ Next",
+          editInChat: "💬 Edit in Chat"
+        },
+        resetConfirm: "Reset financial plan and start over?"
+      }
+    };
+
+    function fmt(num) {
+      if (num === null || num === undefined || isNaN(num)) return "0 €";
+      const locale = currentLang === 'en' ? 'en-US' : 'de-DE';
+      return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: 'EUR',
+        maximumFractionDigits: 0
+      }).format(num);
+    }
+
+    function renderMarkdown(text) {
+      if (!text) return "";
+      return text
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-family:monospace;">$1</code>')
+        .replace(/\n\n/g, '<br><br>')
+        .replace(/\n/g, '<br>');
+    }
+
+    // Set Language Switcher
+    async function setLanguage(lang) {
+      currentLang = lang === 'en' ? 'en' : 'de';
+      localStorage.setItem('fgsbot_lang', currentLang);
+
+      document.getElementById('langBtnDe').classList.toggle('active', currentLang === 'de');
+      document.getElementById('langBtnEn').classList.toggle('active', currentLang === 'en');
+
+      applyLanguageToUI();
+
+      try {
+        const res = await fetch('/api/set-language', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Session-ID': sessionId,
+            'X-Lang': currentLang
+          },
+          body: JSON.stringify({ lang: currentLang })
+        });
+        const data = await res.json();
+        if (data.greeting) {
+          appendMessage('FGSBot', data.greeting.text);
+        }
+        if (data.currentQuestion) {
+          currentQuestion = data.currentQuestion;
+          updateInputDock(data.currentQuestion);
+          updateNavPills(data.currentQuestion.sheetNum || 1);
+        }
+        if (data.calculation) {
+          currentCalculation = data.calculation;
+          updateDashboardKPIs(data.calculation);
+          renderSheetContent();
+          updateGoalSeekPreview(data.calculation);
+        }
+      } catch (err) {
+        console.error("Language switch error:", err);
+      }
+    }
+
+    // Apply Static UI Translations
+    function applyLanguageToUI() {
+      const t = I18N[currentLang];
+      document.getElementById('uiBrandTitle').innerText = t.brandTitle;
+      document.getElementById('uiBrandSub').innerText = t.brandSub;
+      document.getElementById('btnLoadPreset').innerText = t.btnPreset;
+      document.getElementById('btnReset').innerText = t.btnReset;
+      document.getElementById('btnExportExcel').innerText = t.btnExport;
+      document.getElementById('dockSendText').innerText = t.dock.send;
+
+      // Goal Seek Card
+      if (document.getElementById('uiGoalSeekTitle')) {
+        document.getElementById('uiGoalSeekTitle').innerText = t.goalSeek.title;
+        document.getElementById('uiGoalSeekSub').innerText = t.goalSeek.sub;
+        document.getElementById('uiGoalSeekBtnText').innerText = t.goalSeek.btn;
+        document.getElementById('lblPrevNetProfit').innerText = t.goalSeek.lblNetProfit;
+        document.getElementById('lblPrevReqRev').innerText = t.goalSeek.lblReqRev;
+        document.getElementById('lblPrevRamp').innerText = t.goalSeek.lblRamp;
+      }
+
+      // Nav pills
+      t.navPills.forEach((p, idx) => {
+        const elem = document.getElementById('navPill' + (idx + 1));
+        if (elem) elem.innerText = p;
+      });
+
+      // Tabs
+      t.tabs.forEach((tab, idx) => {
+        const elem = document.getElementById('tabBtn' + (idx + 1));
+        if (elem) elem.innerText = tab;
+      });
+
+      // KPI Labels
+      document.getElementById('kpiLabelNetProfit').innerText = t.kpiLabels.netProfit;
+      document.getElementById('kpiSubNetProfit').innerText = t.kpiLabels.subNetProfit;
+      document.getElementById('kpiLabelInvest').innerText = t.kpiLabels.invest;
+      document.getElementById('kpiSubInvest').innerText = t.kpiLabels.subInvest;
+      document.getElementById('kpiLabelOpex').innerText = t.kpiLabels.opex;
+      document.getElementById('kpiLabelOwnerPay').innerText = t.kpiLabels.ownerPay;
+      document.getElementById('kpiSubOwnerPay').innerText = t.kpiLabels.subOwnerPay;
+      document.getElementById('kpiLabelRevY1').innerText = t.kpiLabels.revY1;
+      document.getElementById('kpiSubRevY1').innerText = t.kpiLabels.subRevY1;
+      document.getElementById('kpiLabelLiquidity').innerText = t.kpiLabels.liquidity;
+      document.getElementById('kpiSubLiquidity').innerText = t.kpiLabels.subLiquidity;
+
+      if (currentCalculation) {
+        updateDashboardKPIs(currentCalculation);
+        renderSheetContent();
+        updateGoalSeekPreview(currentCalculation);
+      }
+      if (currentQuestion) {
+        updateInputDock(currentQuestion);
+      }
+    }
+
+    // Append Message to Chat stream
+    function appendMessage(sender, text, isError = false, errorDetail = null) {
+      const chatContainer = document.getElementById('chatMessages');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `message ${sender === 'User' ? 'user' : 'bot'}`;
+
+      let errorHtml = '';
+      if (isError && errorDetail) {
+        errorHtml = `
+          <div class="error-card">
+            <div class="err-title">⚠️ ${errorDetail.error || (currentLang === 'en' ? 'Invalid Input' : 'Ungültige Eingabe')}</div>
+            <div class="err-hint">💡 ${errorDetail.hint || ''}</div>
+            <div class="err-example">📝 ${errorDetail.example || ''}</div>
+          </div>
+        `;
+      }
+
+      msgDiv.innerHTML = `
+        <div class="message-avatar">${sender === 'User' ? '👤' : '🤖'}</div>
+        <div class="message-bubble">
+          ${renderMarkdown(text)}
+          ${errorHtml}
+        </div>
+      `;
+
+      chatContainer.appendChild(msgDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // Update Persistent Bottom Input Dock with current question & presets
+    function updateInputDock(q) {
+      const t = I18N[currentLang];
+      const titleElem = document.getElementById('dockQuestionTitle');
+      const helperElem = document.getElementById('dockQuestionHelper');
+      const presetsRow = document.getElementById('dockPresetsRow');
+      const inputElem = document.getElementById('dockInput');
+
+      if (!q || q.isCompleted) {
+        titleElem.innerText = t.dock.completed;
+        helperElem.innerText = t.dock.completedHelper;
+        presetsRow.innerHTML = `
+          <button class="dock-preset-btn recommended" onclick="sendUserMessage('preset')">${t.btnPreset}</button>
+          <button class="dock-preset-btn" onclick="exportExcel()">${t.btnExport}</button>
+          <button class="dock-preset-btn" onclick="sendUserMessage('status')">📊 ${currentLang === 'en' ? 'Show Status' : 'Status anzeigen'}</button>
+          <button class="dock-preset-btn" onclick="resetPlan()">${t.btnReset}</button>
+        `;
+        inputElem.placeholder = currentLang === 'en' ? "Enter amount or command..." : "Tippe Betrag oder Befehl...";
+        return;
+      }
+
+      const qSheet = q.sheet || (currentLang === 'en' ? `Schedule ${q.sheetNum}` : `Anlage ${q.sheetNum}`);
+      const qLabel = q.label || '';
+      titleElem.innerText = `${currentLang === 'en' ? 'Question' : 'Frage'} ${q.index} / ${q.total} • ${qSheet} (${qLabel})`;
+      helperElem.innerText = `${currentLang === 'en' ? 'Recommended' : 'Empfohlener Richtwert'}: ${q.defaultValue}`;
+
+      const defVal = q.defaultValue;
+      const presets = q.quickPresets || [0, defVal];
+
+      let btns = [];
+      // Recommended button
+      if (defVal !== undefined && defVal !== null) {
+        btns.push(`
+          <button class="dock-preset-btn recommended" onclick="quickFillAndSend('${defVal}')">
+            ${t.dock.apply}: ${typeof defVal === 'number' ? fmt(defVal) : defVal}
+          </button>
+        `);
+      }
+
+      // Other presets
+      presets.forEach(p => {
+        if (p !== defVal) {
+          btns.push(`
+            <button class="dock-preset-btn" onclick="quickFillAndSend('${p}')">
+              ${p === 0 ? t.dock.none : (typeof p === 'number' ? fmt(p) : p)}
+            </button>
+          `);
+        }
+      });
+
+      // Steppers for numbers
+      if (typeof defVal === 'number' && defVal > 0) {
+        btns.push(`<button class="dock-preset-btn" onclick="stepInput(-500)">- 500 €</button>`);
+        btns.push(`<button class="dock-preset-btn" onclick="stepInput(500)">+ 500 €</button>`);
+      }
+
+      // Back and Skip
+      btns.push(`<button class="dock-preset-btn btn-back" onclick="stepBack()">${t.dock.back}</button>`);
+      btns.push(`<button class="dock-preset-btn btn-back" onclick="quickFillAndSend('next')">${t.dock.next}</button>`);
+
+      presetsRow.innerHTML = btns.join('');
+      inputElem.value = defVal !== undefined ? defVal : '';
+      inputElem.placeholder = `${currentLang === 'en' ? 'Enter amount (e.g. ' : 'Betrag eingeben (z.B. '}${defVal}) ...`;
+      inputElem.focus();
+    }
+
+    function quickFillAndSend(val) {
+      sendUserMessage(val);
+    }
+
+    function stepInput(delta) {
+      const input = document.getElementById('dockInput');
+      let cur = parseFloat(input.value) || 0;
+      input.value = Math.max(0, cur + delta);
+      input.focus();
+    }
+
+    function handleDockSubmit(event) {
+      if (event) event.preventDefault();
+      const input = document.getElementById('dockInput');
+      const val = input.value.trim();
+      if (val) {
+        sendUserMessage(val);
+      } else if (currentQuestion && currentQuestion.defaultValue !== undefined) {
+        sendUserMessage(String(currentQuestion.defaultValue));
+      }
+    }
+
+    // Send user message
+    async function sendUserMessage(msg) {
+      if (!msg) return;
+      appendMessage('User', msg);
+      document.getElementById('dockInput').value = '';
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Session-ID': sessionId,
+            'X-Lang': currentLang
+          },
+          body: JSON.stringify({ message: msg })
+        });
+        const data = await res.json();
+        
+        if (data.response) {
+          const isError = !data.response.success;
+          appendMessage('FGSBot', data.response.text, isError, data.response.errorDetail);
+        }
+
+        if (data.calculation) {
+          currentCalculation = data.calculation;
+          updateDashboardKPIs(data.calculation);
+          renderSheetContent();
+        }
+
+        if (data.currentQuestion) {
+          currentQuestion = data.currentQuestion;
+          updateInputDock(data.currentQuestion);
+          updateNavPills(data.currentQuestion.sheetNum || 1);
+        } else if (data.isCompleted) {
+          updateInputDock({ isCompleted: true });
+        }
+      } catch (err) {
+        appendMessage('FGSBot', '❌ Error / Fehler: ' + err.message);
+      }
+    }
+
+    // Step back
+    async function stepBack() {
+      try {
+        const res = await fetch('/api/back', {
+          method: 'POST',
+          headers: {
+            'X-Session-ID': sessionId,
+            'X-Lang': currentLang
+          }
+        });
+        const data = await res.json();
+        if (data.response) {
+          appendMessage('FGSBot', data.response.text);
+        }
+        if (data.calculation) {
+          currentCalculation = data.calculation;
+          updateDashboardKPIs(data.calculation);
+          renderSheetContent();
+        }
+        if (data.currentQuestion) {
+          currentQuestion = data.currentQuestion;
+          updateInputDock(data.currentQuestion);
+          updateNavPills(data.currentQuestion.sheetNum || 1);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Jump to sheet
+    async function jumpToSheet(sheetNum) {
+      try {
+        const res = await fetch('/api/jump-sheet', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Session-ID': sessionId,
+            'X-Lang': currentLang
+          },
+          body: JSON.stringify({ sheetNum })
+        });
+        const data = await res.json();
+        if (data.response) {
+          appendMessage('FGSBot', data.response.text);
+        }
+        if (data.calculation) {
+          currentCalculation = data.calculation;
+          updateDashboardKPIs(data.calculation);
+          renderSheetContent();
+        }
+        if (data.currentQuestion) {
+          currentQuestion = data.currentQuestion;
+          updateInputDock(data.currentQuestion);
+          updateNavPills(sheetNum);
+        }
+        switchSheetTab('anl' + sheetNum);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function updateNavPills(activeNum) {
+      document.querySelectorAll('.nav-pill').forEach((pill, idx) => {
+        pill.classList.toggle('active', (idx + 1) === activeNum);
+      });
+    }
+
+    // Goal-Seek Handlers
+    function setGoalSeekVal(val) {
+      document.getElementById('goalSeekInput').value = val;
+      document.querySelectorAll('.goal-seek-pill').forEach(p => {
+        p.classList.toggle('active', p.innerText.includes(Math.round(val / 1000) + 'k'));
+      });
+      executeGoalSeek();
+    }
+
+    async function executeGoalSeek() {
+      const input = document.getElementById('goalSeekInput');
+      const val = parseFloat(input.value.replace(/[^0-9.]/g, '')) || 100000;
+      
+      try {
+        const res = await fetch('/api/set-net-profit-target', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Session-ID': sessionId,
+            'X-Lang': currentLang
+          },
+          body: JSON.stringify({ targetNetProfit: val, autoScaleRevenue: true })
+        });
+        const data = await res.json();
+        if (data.response) {
+          appendMessage('FGSBot', data.response.text);
+        }
+        if (data.calculation) {
+          currentCalculation = data.calculation;
+          updateDashboardKPIs(data.calculation);
+          renderSheetContent();
+          updateGoalSeekPreview(data.calculation);
+        }
+        if (data.currentQuestion) {
+          currentQuestion = data.currentQuestion;
+          updateInputDock(data.currentQuestion);
+        }
+      } catch (err) {
+        alert('Goal-Seek Error: ' + err.message);
+      }
+    }
+
+    function updateGoalSeekPreview(calc) {
+      if (!calc || !calc.summary) return;
+      const np = calc.summary.netto_gewinn_j1;
+      const rev = calc.summary.jahresumsatz_j1;
+      const m1 = calc.anlage4?.monatsumsaetze_j1?.[0] || 0;
+      const m12 = calc.anlage4?.monatsumsaetze_j1?.[11] || 0;
+
+      const elNp = document.getElementById('valPrevNetProfit');
+      const elRev = document.getElementById('valPrevReqRev');
+      const elRamp = document.getElementById('valPrevRamp');
+
+      if (elNp) elNp.innerText = fmt(np);
+      if (elRev) elRev.innerText = fmt(rev);
+      if (elRamp) elRamp.innerText = `${fmt(m1)} ➔ ${fmt(m12)}`;
+
+      const input = document.getElementById('goalSeekInput');
+      if (input && document.activeElement !== input) {
+        const targetVal = calc.anlage6?.gewinnziel_netto || np;
+        input.value = targetVal;
+        document.querySelectorAll('.goal-seek-pill').forEach(p => {
+          p.classList.toggle('active', p.innerText.includes(Math.round(targetVal / 1000) + 'k'));
+        });
+      }
+    }
+
+    // Update Top KPIs
+    function updateDashboardKPIs(calc) {
+      if (!calc || !calc.summary) return;
+      const s = calc.summary;
+      const t = I18N[currentLang];
+
+      document.getElementById('kpiNetProfit').innerText = fmt(s.netto_gewinn_j1);
+      document.getElementById('kpiTargetBadge').innerText = s.target_reached ? t.kpiLabels.targetAchieved : t.kpiLabels.targetBelow;
+      document.getElementById('kpiTargetBadge').style.background = s.target_reached ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+      document.getElementById('kpiTargetBadge').style.color = s.target_reached ? '#34d399' : '#f87171';
+
+      document.getElementById('kpiInvest').innerText = fmt(s.gesamt_investitionen);
+      document.getElementById('kpiOpex').innerText = fmt(s.monatliche_betriebskosten) + (currentLang === 'en' ? " / Mo." : " / Mtl.");
+      document.getElementById('kpiOpexSub').innerText = fmt(s.jaehrliche_betriebskosten_j1) + (currentLang === 'en' ? " / Year" : " / Jahr");
+      document.getElementById('kpiOwnerPay').innerText = fmt(s.unternehmerlohn_monatlich) + (currentLang === 'en' ? " / Mo." : " / Mtl.");
+      document.getElementById('kpiRevY1').innerText = fmt(s.jahresumsatz_j1);
+
+      const q4Liq = calc.anlage7?.quartale[3]?.kumulativ || 0;
+      document.getElementById('kpiLiquidity').innerText = fmt(q4Liq);
+
+      updateGoalSeekPreview(calc);
+    }
+
+    // Switch Sheet Viewer Tab
+    function switchSheetTab(key) {
+      activeSheetKey = key;
+      document.querySelectorAll('.sheet-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('onclick').includes(key));
+      });
+      renderSheetContent();
+    }
+
+    // Render Table Content for Active Sheet Tab in English or German
+    function renderSheetContent() {
+      const panel = document.getElementById('sheetContentPanel');
+      if (!currentCalculation) {
+        panel.innerHTML = `<p style="color:#94a3b8;">${currentLang === 'en' ? 'Loading financial plan data...' : 'Lade Finanzplandaten...'}</p>`;
+        return;
+      }
+      const calc = currentCalculation;
+      const isEn = currentLang === 'en';
+      const editBtnText = I18N[currentLang].dock.editInChat;
+
+      if (activeSheetKey === 'anl1') {
+        const a1 = calc.anlage1;
+        panel.innerHTML = `
+          <div class="sheet-header-row">
+            <h2>📑 ${isEn ? 'Schedule 1: Capital Expenditures (Investments)' : 'Anlage 1: Investitionen'}</h2>
+            <button class="btn btn-secondary" onclick="jumpToSheet(1)">${editBtnText}</button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>${isEn ? 'Item' : 'Investitionsposten'}</th>
+                  <th>${isEn ? 'Description' : 'Beschreibung'}</th>
+                  <th class="num">${isEn ? 'Amount (Net)' : 'Wert (netto)'}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>${isEn ? 'Office & IT Equipment' : 'Betriebs- & Geschäftsausstattung (BGA)'}</strong></td><td>${isEn ? 'Laptops (1,500 €), Branding & Website (800 €)' : 'Laptops (1.500 €), Branding & Website (800 €)'}</td><td class="num">${fmt(a1.bga)}</td></tr>
+                <tr><td><strong>${isEn ? 'Low-Value Assets (< 800 €)' : 'GWG unter 800 €'}</strong></td><td>${isEn ? 'Test devices, peripherals, printers' : 'Testgeräte, Zubehör, Drucker'}</td><td class="num">${fmt(a1.gwg_unter_800)}</td></tr>
+                <tr><td><strong>${isEn ? 'Assets (800 € - 1,000 €)' : 'GWG 800 - 1.000 €'}</strong></td><td>${isEn ? 'Tablet, specialized hardware' : 'Tablet, Spezial-Hardware'}</td><td class="num">${fmt(a1.gwg_800_1000)}</td></tr>
+                <tr><td><strong>${isEn ? 'Machinery (> 1,000 €)' : 'Maschinen (> 1.000 €)'}</strong></td><td>${isEn ? 'Production machinery & equipment' : 'Großgeräte & Anlagen'}</td><td class="num">${fmt(a1.maschinen)}</td></tr>
+                <tr class="total-row"><td><strong>${isEn ? 'Total Investments' : 'Gesamt-Investitionen'}</strong></td><td>${isEn ? 'Total capital expenditures' : 'Summe aller Anschaffungen'}</td><td class="num">${fmt(a1.gesamt)}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (activeSheetKey === 'anl2') {
+        const a2 = calc.anlage2;
+        const bk = a2.monatlich;
+        panel.innerHTML = `
+          <div class="sheet-header-row">
+            <h2>📑 ${isEn ? 'Schedule 2: Operating Expenses (OpEx)' : 'Anlage 2: Kostenplanung & Betriebskosten'}</h2>
+            <button class="btn btn-secondary" onclick="jumpToSheet(2)">${editBtnText}</button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>${isEn ? 'Expense Item' : 'Position'}</th><th class="num">${isEn ? 'Monthly' : 'Monatlich'}</th><th class="num">${isEn ? 'Year 1 Total' : 'Jahr 1'}</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>${isEn ? 'Office / Co-Working' : 'Büro / Co-Working'}</td><td class="num">${fmt(bk.buero_coworking)}</td><td class="num">${fmt(bk.buero_coworking * 12)}</td></tr>
+                <tr><td>${isEn ? 'Servers, Cloud & Hosting' : 'Server, Cloud & Hosting'}</td><td class="num">${fmt(bk.server_cloud)}</td><td class="num">${fmt(bk.server_cloud * 12)}</td></tr>
+                <tr><td>${isEn ? 'Marketing & Advertising' : 'Marketing & Werbung'}</td><td class="num">${fmt(bk.marketing_werbung)}</td><td class="num">${fmt(bk.marketing_werbung * 12)}</td></tr>
+                <tr><td>${isEn ? 'Accounting & Tax Advisory' : 'Buchhaltung & Steuerberatung'}</td><td class="num">${fmt(bk.buchhaltung_steuer)}</td><td class="num">${fmt(bk.buchhaltung_steuer * 12)}</td></tr>
+                <tr><td>${isEn ? 'Software Subscriptions & Tools' : 'Software-Tools & Lizenzen'}</td><td class="num">${fmt(bk.software_lizenzen)}</td><td class="num">${fmt(bk.software_lizenzen * 12)}</td></tr>
+                <tr><td>${isEn ? 'Business Insurance' : 'Betriebsversicherungen'}</td><td class="num">${fmt(bk.versicherungen)}</td><td class="num">${fmt(bk.versicherungen * 12)}</td></tr>
+                <tr><td>${isEn ? 'Internet, Mobile & Bank' : 'Telefon & Internet'}</td><td class="num">${fmt(bk.telefon_internet)}</td><td class="num">${fmt(bk.telefon_internet * 12)}</td></tr>
+                <tr class="total-row"><td><strong>${isEn ? 'Total Recurring OpEx' : 'Laufende Kosten gesamt'}</strong></td><td class="num">${fmt(a2.monatliche_summe)}</td><td class="num">${fmt(a2.jaehrlich_summe)}</td></tr>
+                <tr><td>${isEn ? 'One-Off Launch & Legal Expenses' : 'Einmalige Gründungsausgaben'}</td><td colspan="2" class="num" style="color:#f59e0b;">${fmt(a2.einmalige_ausgaben)}</td></tr>
+                <tr class="highlight-row"><td><strong>${isEn ? 'Total Year 1 Expenses' : 'Gesamtausgaben Jahr 1'}</strong></td><td colspan="2" class="num">${fmt(a2.gesamt_j1)}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (activeSheetKey === 'anl3') {
+        const a3 = calc.anlage3;
+        panel.innerHTML = `
+          <div class="sheet-header-row">
+            <h2>📑 ${isEn ? "Schedule 3: Owner's Living Draw (Living Expenses)" : 'Anlage 3: Privater Aufwand & Unternehmerlohn'}</h2>
+            <button class="btn btn-secondary" onclick="jumpToSheet(3)">${editBtnText}</button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>${isEn ? 'Category' : 'Bereich'}</th><th class="num">${isEn ? 'Monthly' : 'Monatlich'}</th><th class="num">${isEn ? 'Annual' : 'Jahr'}</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>${isEn ? 'Living (Groceries, clothing, vehicle)' : 'Lebenshaltung (Essen, Kleidung, Kfz privat)'}</td><td class="num">${fmt(a3.lebenshaltung)}</td><td class="num">${fmt(a3.lebenshaltung * 12)}</td></tr>
+                <tr><td>${isEn ? 'Housing (Rent + utilities)' : 'Wohnkosten (Warmmiete + Strom/Gas)'}</td><td class="num">${fmt(a3.wohnkosten)}</td><td class="num">${fmt(a3.wohnkosten * 12)}</td></tr>
+                <tr><td>${isEn ? 'Health Insurance' : 'Krankenversicherung'}</td><td class="num">${fmt(a3.krankenversicherung)}</td><td class="num">${fmt(a3.krankenversicherung * 12)}</td></tr>
+                <tr><td>${isEn ? 'Retirement Provision' : 'Altersvorsorge / Rente'}</td><td class="num">${fmt(a3.altersversorgung)}</td><td class="num">${fmt(a3.altersversorgung * 12)}</td></tr>
+                <tr><td>${isEn ? 'Personal Reserves & Buffer' : 'Private Rücklagen (Urlaub, Notgroschen)'}</td><td class="num">${fmt(a3.priv_ruecklagen)}</td><td class="num">${fmt(a3.priv_ruecklagen * 12)}</td></tr>
+                <tr class="highlight-row"><td><strong>${isEn ? "Minimum Owner's Draw" : 'Mindest-Unternehmerlohn'}</strong></td><td class="num">${fmt(a3.monatlich_gesamt)}</td><td class="num">${fmt(a3.jahr_gesamt)}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (activeSheetKey === 'anl4') {
+        const a4 = calc.anlage4;
+        panel.innerHTML = `
+          <div class="sheet-header-row">
+            <h2>📑 ${isEn ? 'Schedule 4: Revenue & Profit Plan (Months 1-12)' : 'Anlage 4: Ertrags- & Umsatzplanung (Monate 1-12)'}</h2>
+            <button class="btn btn-secondary" onclick="jumpToSheet(4)">${editBtnText}</button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>${isEn ? 'Month' : 'Monat'}</th><th class="num">${isEn ? 'Net Revenue' : 'Nettoumsatz'}</th><th class="num">${isEn ? 'OpEx' : 'Betriebskosten'}</th><th class="num">${isEn ? 'Operating Profit (EBITDA)' : 'Betriebsergebnis'}</th><th class="num">${isEn ? 'Owner Draw' : 'Unternehmerlohn'}</th></tr>
+              </thead>
+              <tbody>
+                ${a4.monatliche_ergebnisse_j1.map((m, idx) => `
+                  <tr>
+                    <td><strong>${isEn ? 'Month ' + (idx + 1) : 'Monat ' + (idx + 1)}</strong></td>
+                    <td class="num">${fmt(m.umsatz)}</td>
+                    <td class="num">${fmt(m.betriebskosten)}</td>
+                    <td class="num" style="color:#60a5fa;">${fmt(m.betriebsergebnis1)}</td>
+                    <td class="num">${fmt(m.unternehmerlohn)}</td>
+                  </tr>
+                `).join('')}
+                <tr class="highlight-row">
+                  <td><strong>${isEn ? 'Total Year 1' : 'Gesamt Jahr 1'}</strong></td>
+                  <td class="num">${fmt(a4.jahresumsatz_j1)}</td>
+                  <td class="num">${fmt(calc.summary.jaehrliche_betriebskosten_j1)}</td>
+                  <td class="num">${fmt(calc.summary.ebt_j1)}</td>
+                  <td class="num">${fmt(calc.summary.unternehmerlohn_jahr)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (activeSheetKey === 'anl5') {
+        const a5 = calc.anlage5;
+        panel.innerHTML = `
+          <div class="sheet-header-row">
+            <h2>📑 ${isEn ? 'Schedule 5: Capital Requirements & Financing' : 'Anlage 5: Finanzbedarf & Finanzierung'}</h2>
+            <button class="btn btn-secondary" onclick="jumpToSheet(5)">${editBtnText}</button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>${isEn ? 'Position' : 'Position'}</th><th>${isEn ? 'Calculation Base' : 'Beschreibung'}</th><th class="num">${isEn ? 'Amount' : 'Betrag'}</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>${isEn ? '1. Working Capital (Q1)' : '1. Betriebsmittel Gründung'}</td><td>${isEn ? '3 months OpEx + one-off launch costs' : '3 Monate Kosten + Einmalausgaben'}</td><td class="num">${fmt(a5.betriebsmittel_q1)}</td></tr>
+                <tr><td>${isEn ? '2. Capital Investments (CapEx)' : '2. Investitionen'}</td><td>${isEn ? 'Hardware & office equipment' : 'Hardware & Ausstattung'}</td><td class="num">${fmt(a5.investitionen)}</td></tr>
+                <tr class="total-row"><td><strong>${isEn ? 'Total Capital Required' : 'Gesamtfinanzbedarf'}</strong></td><td>${isEn ? 'Sum 1 + 2' : 'Summe 1 + 2'}</td><td class="num">${fmt(a5.finanzbedarf_netto)}</td></tr>
+                <tr><td>${isEn ? 'Founder Equity Contribution' : 'Eingebrachtes Eigenkapital'}</td><td>${isEn ? 'Personal savings' : 'Eigene Ersparnisse'}</td><td class="num" style="color:#34d399;">${fmt(a5.finanzierung.eigenkapital)}</td></tr>
+                <tr class="highlight-row"><td><strong>${isEn ? 'Funding Surplus / Safety Buffer' : 'Deckungssaldo'}</strong></td><td>${isEn ? 'Financing ./. Capital Needed' : 'Finanzierung ./. Bedarf'}</td><td class="num">${fmt(a5.deckung_ueberhang)}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (activeSheetKey === 'anl6') {
+        const a6 = calc.anlage6;
+        panel.innerHTML = `
+          <div class="sheet-header-row">
+            <h2>📑 ${isEn ? 'Schedule 6: Profitability Forecast (3 Years)' : 'Anlage 6: Rentabilitätsvorschau (3 Jahre)'}</h2>
+            <button class="btn btn-secondary" onclick="jumpToSheet(6)">${editBtnText}</button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>${isEn ? 'P&L Line' : 'Position'}</th><th class="num">${isEn ? 'Year 1' : '1. Jahr'}</th><th class="num">${isEn ? 'Year 2' : '2. Jahr'}</th><th class="num">${isEn ? 'Year 3' : '3. Jahr'}</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>${isEn ? 'Net Revenue' : 'Umsatzerlöse (netto)'}</td><td class="num">${fmt(a6.j1.umsatz)}</td><td class="num">${fmt(a6.j2.umsatz)}</td><td class="num">${fmt(a6.j3.umsatz)}</td></tr>
+                <tr><td>${isEn ? './. Operating Expenses' : './. Betriebskosten'}</td><td class="num">${fmt(calc.summary.jaehrliche_betriebskosten_j1)}</td><td class="num">${fmt(calc.summary.jaehrliche_betriebskosten_j1)}</td><td class="num">${fmt(calc.summary.jaehrliche_betriebskosten_j1)}</td></tr>
+                <tr class="total-row"><td><strong>${isEn ? 'Pre-Tax Profit (EBT)' : 'Gewinn vor Steuern (EBT)'}</strong></td><td class="num">${fmt(a6.j1.ebt)}</td><td class="num">${fmt(a6.j2.ebt)}</td><td class="num">${fmt(a6.j3.ebt)}</td></tr>
+                <tr><td>${isEn ? './. Estimated Income Tax (' + a6.steuersatz_prozent + '%)' : './. Einkommensteuer (' + a6.steuersatz_prozent + '%)'}</td><td class="num">${fmt(a6.j1.steuer)}</td><td class="num">${fmt(a6.j2.steuer)}</td><td class="num">${fmt(a6.j3.steuer)}</td></tr>
+                <tr class="highlight-row"><td><strong>${isEn ? 'Net Profit after Tax' : 'Gewinn nach Steuern'}</strong></td><td class="num">🎯 ${fmt(a6.j1.netto_gewinn)}</td><td class="num">🎯 ${fmt(a6.j2.netto_gewinn)}</td><td class="num">🎯 ${fmt(a6.j3.netto_gewinn)}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (activeSheetKey === 'anl7') {
+        const a7 = calc.anlage7;
+        panel.innerHTML = `
+          <div class="sheet-header-row">
+            <h2>📑 ${isEn ? 'Schedule 7: Cash Flow & Liquidity Plan' : 'Anlage 7: Liquiditätsplanung'}</h2>
+            <button class="btn btn-secondary" onclick="jumpToSheet(7)">${editBtnText}</button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>${isEn ? 'Quarter' : 'Quartal'}</th><th class="num">${isEn ? 'EBITDA' : 'Betriebsergebnis'}</th><th class="num">${isEn ? 'Owner Draw' : 'Privatentnahme'}</th><th class="num">${isEn ? 'VAT Balance' : 'MwSt'}</th><th class="num">${isEn ? 'Cumulative Cash Reserve' : 'Liquidität Kumulativ'}</th></tr>
+              </thead>
+              <tbody>
+                ${a7.quartale.map(q => `
+                  <tr>
+                    <td><strong>${q.quartal}</strong></td>
+                    <td class="num">${fmt(q.betriebsergebnis)}</td>
+                    <td class="num">${fmt(q.entnahmen)}</td>
+                    <td class="num">${fmt(q.mwst)}</td>
+                    <td class="num" style="color:#34d399; font-weight:700;">${fmt(q.kumulativ)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (activeSheetKey === 'anl8') {
+        const a8 = calc.anlage8;
+        panel.innerHTML = `
+          <div class="sheet-header-row">
+            <h2>📑 ${isEn ? 'Schedule 8: VAT & Sales Tax Calculation (19%)' : 'Anlage 8: Ermittlung der MwSt. (19%)'}</h2>
+            <button class="btn btn-secondary" onclick="jumpToSheet(8)">${editBtnText}</button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>${isEn ? 'Quarter' : 'Quartal'}</th><th class="num">${isEn ? 'Net Revenue' : 'Umsatz netto'}</th><th class="num">${isEn ? 'Output VAT (19%)' : 'Umsatzsteuer 19%'}</th><th class="num">${isEn ? 'Input VAT' : 'Vorsteuer'}</th><th class="num">${isEn ? 'VAT Payable' : 'Zahllast'}</th></tr>
+              </thead>
+              <tbody>
+                ${a8.quartale.map((q, idx) => `
+                  <tr>
+                    <td><strong>${(idx + 1)}. ${isEn ? 'Quarter' : 'Quartal'}</strong></td>
+                    <td class="num">${fmt(q.umsatz_netto)}</td>
+                    <td class="num">${fmt(q.umsatzsteuer)}</td>
+                    <td class="num">${fmt(q.vorsteuer_gesamt)}</td>
+                    <td class="num" style="color:#f59e0b; font-weight:700;">${fmt(q.zahllast)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
+    }
+
+    // Load preset
+    async function loadPreset() {
+      try {
+        appendMessage('User', currentLang === 'en' ? '⚡ Load 100k Net Profit Preset' : '⚡ PrimeDiet Care (100k NettoProfit) Vorlage laden');
+        const res = await fetch('/api/preset', {
+          method: 'POST',
+          headers: {
+            'X-Session-ID': sessionId,
+            'X-Lang': currentLang
+          }
+        });
+        const data = await res.json();
+        if (data.response) {
+          appendMessage('FGSBot', data.response.text);
+        }
+        if (data.calculation) {
+          currentCalculation = data.calculation;
+          updateDashboardKPIs(data.calculation);
+          renderSheetContent();
+        }
+        updateInputDock({ isCompleted: true });
+      } catch (err) {
+        alert('Error / Fehler: ' + err.message);
+      }
+    }
+
+    // Reset plan
+    async function resetPlan() {
+      if (!confirm(I18N[currentLang].resetConfirm)) return;
+      try {
+        const res = await fetch('/api/reset', {
+          method: 'POST',
+          headers: {
+            'X-Session-ID': sessionId,
+            'X-Lang': currentLang
+          }
+        });
+        const data = await res.json();
+        document.getElementById('chatMessages').innerHTML = '';
+        if (data.response) {
+          appendMessage('FGSBot', data.response.text);
+        }
+        if (data.calculation) {
+          currentCalculation = data.calculation;
+          updateDashboardKPIs(data.calculation);
+          renderSheetContent();
+        }
+        if (data.currentQuestion) {
+          currentQuestion = data.currentQuestion;
+          updateInputDock(data.currentQuestion);
+          updateNavPills(data.currentQuestion.sheetNum || 1);
+        }
+      } catch (err) {
+        alert('Error / Fehler: ' + err.message);
+      }
+    }
+
+    // Export Excel
+    async function exportExcel() {
+      try {
+        const res = await fetch('/api/export-excel', {
+          method: 'POST',
+          headers: {
+            'X-Session-ID': sessionId,
+            'X-Lang': currentLang
+          }
+        });
+        const data = await res.json();
+        if (data.success && data.downloadUrl) {
+          window.location.href = data.downloadUrl;
+        } else {
+          alert('Excel Export failed / fehlgeschlagen: ' + (data.details || data.error));
+        }
+      } catch (err) {
+        alert('Download Error: ' + err.message);
+      }
+    }
+
+    // Init App
+    async function initApp() {
+      applyLanguageToUI();
+      try {
+        const res = await fetch('/api/init', {
+          headers: {
+            'X-Session-ID': sessionId,
+            'X-Lang': currentLang
+          }
+        });
+        const data = await res.json();
+        if (data.greeting) {
+          appendMessage('FGSBot', data.greeting.text);
+        }
+        if (data.calculation) {
+          currentCalculation = data.calculation;
+          updateDashboardKPIs(data.calculation);
+          renderSheetContent();
+        }
+        if (data.currentQuestion) {
+          currentQuestion = data.currentQuestion;
+          updateInputDock(data.currentQuestion);
+          updateNavPills(data.currentQuestion.sheetNum || 1);
+        }
+      } catch (err) {
+        console.error("Init error:", err);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
