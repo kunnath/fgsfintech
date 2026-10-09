@@ -1,5 +1,5 @@
 /**
- * FGSBot Input Validation Module - Bilingual (German & English)
+ * ConnectoryFinAssistant Input Validation Module - Bilingual (German & English)
  * Smart NLP parser, flexible currency/number extraction, and friendly error feedback.
  */
 

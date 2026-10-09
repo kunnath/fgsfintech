@@ -1,7 +1,7 @@
 {
   "name": "zgsbot",
   "version": "1.0.0",
-  "description": "FGSBot - Bilingual Financial Planning Chatbot with MongoDB persistence",
+  "description": "ConnectoryFinAssistant - Bilingual Financial Planning Chatbot with MongoDB persistence",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

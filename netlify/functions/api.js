@@ -1,8 +1,8 @@
 /**
- * Netlify Serverless Function: FGSBot API Backend with MongoDB ('zgs') Persistence
+ * Netlify Serverless Function: ConnectoryFinAssistant API Backend with MongoDB ('zgs') Persistence
  */
 
-const { FGSBotSession } = require('../../botLogic.js');
+const { ConnectoryFinAssistantSession, FGSBotSession } = require('../../botLogic.js');
 const { calculateFinancialPlan } = require('../../financialEngine.js');
 const { exportPlanToBuffer } = require('../../excelExporter.js');
 const { getSessionFromDb, saveSessionToDb, logChatToDb } = require('../../db.js');
@@ -48,7 +48,7 @@ exports.handler = async function (event, context) {
     const reqLang = headers['x-lang'] || headers['X-Lang'] || query.lang || 'de';
 
     // 2. Load / Restore Session from MongoDB
-    const session = new FGSBotSession(reqLang);
+    const session = new ConnectoryFinAssistantSession(reqLang);
     const dbData = await getSessionFromDb(sessionId);
     if (dbData) {
       session.fromJSON(dbData);
@@ -219,7 +219,7 @@ exports.handler = async function (event, context) {
           statusCode: 200,
           headers: {
             'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition': 'attachment; filename="Finanzplanung_FGSBot_Export.xlsx"',
+            'Content-Disposition': 'attachment; filename="Finanzplanung_ConnectoryFinAssistant_Export.xlsx"',
             'Access-Control-Allow-Origin': '*'
           },
           body: buffer.toString('base64'),

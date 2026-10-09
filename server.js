@@ -22,7 +22,7 @@ async function getSession(req) {
   const lang = req.headers['x-lang'] || urlObj.searchParams.get('lang') || 'de';
 
   if (!inMemorySessions.has(sessionId)) {
-    const session = new FGSBotSession(lang);
+    const session = new ConnectoryFinAssistantSession(lang);
     // Attempt to restore from MongoDB
     const dbData = await getSessionFromDb(sessionId);
     if (dbData) {
@@ -266,7 +266,7 @@ async function handleApiRequest(req, res, pathname) {
       const buffer = await exportPlanToBuffer(session.customPlanData);
       res.writeHead(200, {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Content-Disposition': 'attachment; filename="Finanzplanung_FGSBot_Export.xlsx"',
+        'Content-Disposition': 'attachment; filename="Finanzplanung_ConnectoryFinAssistant_Export.xlsx"',
         'Content-Length': buffer.length,
         'Access-Control-Allow-Origin': '*'
       });
@@ -307,7 +307,7 @@ const server = http.createServer((req, res) => {
       'Cache-Control': 'no-cache, no-store, must-revalidate'
     };
     if (ext === '.xlsx') {
-      headers['Content-Disposition'] = 'attachment; filename="Finanzplanung_FGSBot_Export.xlsx"';
+      headers['Content-Disposition'] = 'attachment; filename="Finanzplanung_ConnectoryFinAssistant_Export.xlsx"';
     }
 
     res.writeHead(200, headers);
@@ -321,7 +321,7 @@ async function startServer(port) {
 
   server.listen(port, () => {
     console.log(`====================================================`);
-    console.log(`🤖 FGSBot Financial Planning Server is RUNNING!`);
+    console.log(`🤖 ConnectoryFinAssistant Server is RUNNING!`);
     console.log(`🌐 Web UI: http://localhost:${port}`);
     console.log(`🍃 Database: MongoDB ('${DB_NAME}')`);
     console.log(`🌍 Languages: 🇩🇪 Deutsch | 🇬🇧 English`);

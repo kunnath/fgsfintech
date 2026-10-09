@@ -1,6 +1,6 @@
-# FGSBot • Financial Planning Bot / Finanzplanungs-Chatbot
+# ConnectoryFinAssistant • Financial & Business Planning Assistant
 
-**FGSBot** is a smart, interactive financial planning assistant built for founders, startups, and businesses to create bank-ready financial plans.
+**ConnectoryFinAssistant** is a smart, interactive financial planning assistant built for founders, startups, and businesses to create bank-ready financial plans.
 
 It is 100% modeled after the German master financial plan structure: **`Finanzplanung_2026_PrimeDiet_Care_100k_NettoProfit_updated.xlsx`** and includes all **8 schedules / Anlagen** with live formula calculation, Goal-Seek target net profit solving, pure JavaScript Excel generation, and **MongoDB (`zgs`) persistence**.
 
@@ -8,7 +8,7 @@ It is 100% modeled after the German master financial plan structure: **`Finanzpl
 
 ## 🌍 Bilingual Support / Zweisprachig (🇩🇪 Deutsch & 🇬🇧 English)
 
-FGSBot provides complete bilingual support:
+ConnectoryFinAssistant provides complete bilingual support:
 - **Instant Language Toggle:** Switch anytime between German (`🇩🇪 DE`) and English (`🇬🇧 EN`) in the header.
 - **Bilingual Bot Conversation:** Greetings, milestone summaries, help commands, error corrections, and examples in both languages.
 - **Bilingual Financial Dashboard:** All 8 schedules, KPI metrics, table headers, and line items translate seamlessly.

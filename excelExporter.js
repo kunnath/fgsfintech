@@ -1,5 +1,5 @@
 /**
- * FGSBot Excel Exporter (Pure JavaScript using exceljs)
+ * ConnectoryFinAssistant Excel Exporter (Pure JavaScript using exceljs)
  * Updates finanzplanung.xlsx with user's financial plan data and returns binary buffer or saves to disk.
  */
 
@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 
 const TEMPLATE_PATH = path.join(__dirname, 'finanzplanung.xlsx');
-const DEFAULT_OUTPUT_PATH = path.join(__dirname, 'public', 'Finanzplanung_FGSBot_Export.xlsx');
+const DEFAULT_OUTPUT_PATH = path.join(__dirname, 'public', 'Finanzplanung_ConnectoryFinAssistant_Export.xlsx');
 
 async function exportPlanToBuffer(customData) {
   const inv = customData.investitionen || {};

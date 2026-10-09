@@ -1,5 +1,5 @@
 /**
- * FGSBot Financial Calculation Engine
+ * ConnectoryFinAssistant Financial Calculation Engine
  * Flexible & Generic Business Financial Planning Engine
  * Supports custom founder & business plans, with PrimeDiet Care 100k NettoProfit as a benchmark reference model.
  */

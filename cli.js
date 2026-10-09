@@ -5,10 +5,10 @@
  */
 
 const readline = require('readline');
-const { FGSBotSession } = require('./botLogic.js');
+const { ConnectoryFinAssistantSession, FGSBotSession } = require('./botLogic.js');
 const { formatEuro } = require('./validator.js');
 
-const bot = new FGSBotSession();
+const bot = new ConnectoryFinAssistantSession();
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -17,8 +17,8 @@ const rl = readline.createInterface({
 
 console.clear();
 console.log("==================================================================");
-console.log("🤖 FGSBot - Finanzplanungs-Chatbot für Existenzgründung & Businessplan");
-console.log("   (Modell: PrimeDiet Care 100k NettoProfit / 8 Anlagen)");
+console.log("🤖 ConnectoryFinAssistant - Finanzplanungs- & Businessplan-Assistent");
+console.log("   (Individuelle Planung & 100k Benchmark-Modell / 8 Anlagen)");
 console.log("==================================================================\n");
 
 const greeting = bot.getGreeting();
@@ -27,7 +27,7 @@ console.log("\n-----------------------------------------------------------------
 
 function askNext() {
   const curQ = bot.getCurrentQuestion();
-  const promptText = curQ ? `\n[${curQ.sheet} - Frage ${curQ.index}/${curQ.total}] > ` : "\nFGSBot > ";
+  const promptText = curQ ? `\n[${curQ.sheet} - Frage ${curQ.index}/${curQ.total}] > ` : "\nConnectoryFinAssistant > ";
 
   rl.question(promptText, (input) => {
     const trimmed = input.trim();

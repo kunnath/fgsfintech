@@ -1,11 +1,11 @@
 /**
- * FGSBot Conversational State Machine & Chat Controller - Bilingual (DE / EN)
+ * ConnectoryFinAssistant Conversational State Machine & Chat Controller - Bilingual (DE / EN)
  */
 
 const { calculateFinancialPlan, BLANK_FINANZPLAN_DATA, PRIMEDIET_BENCHMARK_DATA, DEFAULT_FINANZPLAN_DATA, applyNetProfitTarget, solveRevenueForNetProfit } = require('./financialEngine.js');
 const { QUESTION_DEFINITIONS, ORDERED_QUESTION_KEYS, formatEuro, parseNumericInput } = require('./validator.js');
 
-class FGSBotSession {
+class ConnectoryFinAssistantSession {
   constructor(lang = 'de') {
     this.lang = lang;
     this.reset();
@@ -576,6 +576,6 @@ Klicke auf **"Excel herunterladen"**, um deinen fertigen Finanzplan herunterzula
 }
 
 module.exports = {
-  ConnectoryFinAssistantSession: FGSBotSession,
-  FGSBotSession
+  ConnectoryFinAssistantSession,
+  FGSBotSession: ConnectoryFinAssistantSession
 };
