@@ -2,7 +2,7 @@
  * FGSBot Conversational State Machine & Chat Controller - Bilingual (DE / EN)
  */
 
-const { calculateFinancialPlan, DEFAULT_FINANZPLAN_DATA, applyNetProfitTarget, solveRevenueForNetProfit } = require('./financialEngine.js');
+const { calculateFinancialPlan, BLANK_FINANZPLAN_DATA, PRIMEDIET_BENCHMARK_DATA, DEFAULT_FINANZPLAN_DATA, applyNetProfitTarget, solveRevenueForNetProfit } = require('./financialEngine.js');
 const { QUESTION_DEFINITIONS, ORDERED_QUESTION_KEYS, formatEuro, parseNumericInput } = require('./validator.js');
 
 class FGSBotSession {
@@ -18,7 +18,7 @@ class FGSBotSession {
   reset() {
     this.currentQuestionIndex = 0;
     this.userAnswers = {};
-    this.customPlanData = JSON.parse(JSON.stringify(DEFAULT_FINANZPLAN_DATA));
+    this.customPlanData = JSON.parse(JSON.stringify(BLANK_FINANZPLAN_DATA));
     this.history = [];
     this.isCompleted = false;
   }
@@ -136,8 +136,8 @@ class FGSBotSession {
       return {
         sender: "FGSBot",
         text: isEn ?
-          `👋 **Hello! Welcome back to FGSBot.** Your financial plan is currently complete.\nTarget Net Profit: **${formatEuro(plan.summary.netto_gewinn_j1, 'en')}**.\nYou can modify values, reload the preset, or export the Excel file!` :
-          `👋 **Hallo! Willkommen zurück bei FGSBot.** Deine Finanzplanung ist aktuell vollständig erfasst.\nGewinn nach Steuern: **${formatEuro(plan.summary.netto_gewinn_j1, 'de')}**.\nDu kannst beliebige Werte anpassen, die Vorlage neu laden oder die Excel-Datei exportieren!`,
+          `👋 **Hello! Welcome back to FGSBot.** Your financial plan is currently complete.\nTarget Net Profit: **${formatEuro(plan.summary.netto_gewinn_j1, 'en')}**.\nYou can modify values, reload the benchmark preset, or export the Excel file!` :
+          `👋 **Hallo! Willkommen zurück bei FGSBot.** Deine Finanzplanung ist aktuell vollständig erfasst.\nGewinn nach Steuern: **${formatEuro(plan.summary.netto_gewinn_j1, 'de')}**.\nDu kannst beliebige Werte anpassen, die Benchmark-Vorlage neu laden oder die Excel-Datei exportieren!`,
         question: q,
         calculation: plan
       };
@@ -148,22 +148,22 @@ class FGSBotSession {
         sender: "FGSBot",
         text: `👋 **Hello! Welcome to FGSBot** – your smart Financial Planning Assistant for startups & business planning!
 
-I will guide you step-by-step through all 8 schedules of your financial plan (based on the **PrimeDiet Care 100,000 € Net Profit benchmark model**):
+I will guide you step-by-step through all 8 schedules of your customized financial plan:
 
 📑 **Overview of the 8 Schedules:**
-1️⃣ **Schedule 1:** Investments *(CapEx, laptops, office, branding)*
+1️⃣ **Schedule 1:** Investments *(CapEx, laptops, office, equipment)*
 2️⃣ **Schedule 2:** Operating Expenses *(Rent, cloud, marketing, legal setup)*
 3️⃣ **Schedule 3:** Owner's Living Expenses *(Housing, living costs, health insurance)*
 4️⃣ **Schedule 4:** Revenue & Profit Plan *(Offering, growth curve, COGS)*
 5️⃣ **Schedule 5:** Financing Plan *(Startup capital, founder equity, loans)*
-6️⃣ **Schedule 6:** Profitability Forecast *(EBT, taxes, 100k net profit target)*
+6️⃣ **Schedule 6:** Profitability Forecast *(EBT, taxes, net profit target)*
 7️⃣ **Schedule 7:** Cash Flow & Liquidity *(Quarterly liquidity & cash reserve)*
 8️⃣ **Schedule 8:** VAT Calculation *(19% sales tax & input tax balance)*
 
-🎯 **Tip:** You can set or adjust your **Year 1 Net Profit Target** anytime (e.g. *"Set net profit to 80k"* or using the Goal-Seek control)!
+💡 **Tip:** You can enter your own numbers step by step, set a net profit target (e.g. *"Set net profit to 80k"*), or click **"Load Benchmark Preset"** to see a full 100k reference model!
 
 ---
-🚀 **First Question on ${q.sheet} (${q.label}):**
+🚀 **Question 1 on ${q.sheet} (${q.label}):**
 ${q.question}`,
         question: q,
         suggestedInput: String(q.defaultValue)
@@ -172,24 +172,24 @@ ${q.question}`,
 
     return {
       sender: "FGSBot",
-      text: `👋 **Hallo! Willkommen bei FGSBot** – deinem Finanzplanungs-Assistenten für deine Existenzgründung!
+      text: `👋 **Hallo! Willkommen bei FGSBot** – deinem Finanzplanungs-Assistenten für deine Existenzgründung & Businessplanung!
 
-Ich führe dich Schritt für Schritt durch alle 8 Anlagen deiner Finanzplanung (basierend auf dem Modell **PrimeDiet Care mit 100.000 € Netto-Gewinn-Ziel**):
+Ich führe dich Schritt für Schritt durch alle 8 Anlagen deiner individuellen Finanzplanung:
 
 📑 **Die 8 Anlagen im Überblick:**
-1️⃣ **Anlage 1:** Investitionen *(Laptops, Büro, Ausstattung)*
+1️⃣ **Anlage 1:** Investitionen *(Laptops, Büro, Ausstattung, Branding)*
 2️⃣ **Anlage 2:** Betriebskosten *(Miete, Server, Marketing, Gründung)*
 3️⃣ **Anlage 3:** Privater Unternehmerlohn *(Miete, Lebenshaltung, KV)*
 4️⃣ **Anlage 4:** Umsatz- & Ertragsplanung *(Geschäftsfelder, Wachstum)*
 5️⃣ **Anlage 5:** Finanzbedarf & Finanzierung *(Eigenkapital, Kredite)*
-6️⃣ **Anlage 6:** Rentabilitätsvorschau *(Gewinn vor/nach Steuern, 100k Ziel)*
+6️⃣ **Anlage 6:** Rentabilitätsvorschau *(Gewinn vor/nach Steuern, Gewinnziel)*
 7️⃣ **Anlage 7:** Liquiditätsplanung *(Quartals-Cashflow & Puffer)*
 8️⃣ **Anlage 8:** MwSt-Ermittlung *(Umsatzsteuer & Vorsteuer)*
 
-🎯 **Tipp:** Du kannst dein **Netto-Gewinnziel für Jahr 1** jederzeit setzen oder anpassen (z.B. *"Setze Gewinnziel auf 80k"* oder über die Zielwertsuche)!
+💡 **Tipp:** Du kannst deine eigenen Werte Schritt für Schritt eingeben, dein Gewinnziel setzen (z.B. *"Setze Gewinnziel auf 80k"*), oder mit **"100k Musterplan laden"** eine fertige Referenz-Vorlage ansehen!
 
 ---
-🚀 **Erste Frage zu ${q.sheet} (${q.label}):**
+🚀 **Frage 1 zu ${q.sheet} (${q.label}):**
 ${q.question}`,
       question: q,
       suggestedInput: String(q.defaultValue)

@@ -1,24 +1,112 @@
 /**
  * FGSBot Financial Calculation Engine
- * Replicates the calculations and model structure from:
- * Finanzplanung_2026_PrimeDiet_Care_100k_NettoProfit_updated.xlsx
+ * Flexible & Generic Business Financial Planning Engine
+ * Supports custom founder & business plans, with PrimeDiet Care 100k NettoProfit as a benchmark reference model.
  */
 
-// Default benchmark values matching PrimeDiet Care 100k NettoProfit
-const DEFAULT_FINANZPLAN_DATA = {
+// Blank initial financial plan data for a clean founder start
+const BLANK_FINANZPLAN_DATA = {
   // Anlage 1: Investitionen
   investitionen: {
-    bga: 2300,            // Betriebs- und Geschäftsausstattung (Laptops 1500, Website/Branding 800)
-    gwg_unter_800: 500,   // Geringwertige Wirtschaftsgüter bis 800€ (Zubehör, Testgeräte)
-    gwg_800_1000: 700,    // GWG 800-1000€ (Tablet, Spezialgeräte)
-    maschinen: 0,         // Maschinen über 1000€
-    gebaeude: 0,          // Umbauten / Elektroarbeiten / Renovierung
-    grundstuecke: 0       // Grundstücke
+    bga: 0,
+    gwg_unter_800: 0,
+    gwg_800_1000: 0,
+    maschinen: 0,
+    gebaeude: 0,
+    grundstuecke: 0
   },
 
   // Anlage 2: Betriebliche Aufwendungen
   betriebskosten: {
-    // Monatlich laufend (Jahr 1)
+    buero_coworking: 0,
+    strom_gas: 0,
+    reinigung: 0,
+    bueromaterial: 0,
+    telefon_internet: 0,
+    porto: 0,
+    server_cloud: 0,
+    marketing_werbung: 0,
+    beitraege_gebuehren: 0,
+    versicherungen: 0,
+    buchhaltung_steuer: 0,
+    kfz_kosten: 0,
+    software_lizenzen: 0,
+    kontofuehrung: 0,
+    weiterbildung: 0,
+    sonstiger_aufwand: 0,
+    gruendungskosten: 0,
+    mietkaution: 0,
+    launch_reserve: 0
+  },
+
+  // Folgejahre Kosten (Jahr 2 & 3)
+  betriebskosten_folgejahre: {
+    jahr2_quartal: 0,
+    jahr3_quartal: 0
+  },
+
+  // Anlage 3: Privater Aufwand & Unternehmerlohn (monatlich)
+  privataufwand: {
+    lebenshaltung_verpflegung: 0,
+    lebenshaltung_kleidung: 0,
+    lebenshaltung_tel_privat: 0,
+    lebenshaltung_kfz_privat: 0,
+    lebenshaltung_sonstiges: 0,
+    warmmiete: 0,
+    strom_gas_privat: 0,
+    krankenversicherung: 0,
+    rentenversicherung: 0,
+    rechtsschutz: 0,
+    hausrat: 0,
+    haftpflicht: 0,
+    lebensversicherung: 0,
+    ruecklage_urlaub: 0,
+    ruecklage_krankheit: 0,
+    ruecklage_anschaffung: 0,
+    private_einnahmen: 0
+  },
+
+  // Anlage 4: Umsatz- und Ertragsplanung
+  umsatzplanung: {
+    geschaeftsfeld_1_name: "Eigenes Geschäftsmodell / Business Offering",
+    geschaeftsfeld_2_name: "",
+    geschaeftsfeld_3_name: "",
+    monatsumsaetze_j1: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    materialverbrauch_prozent: 0,
+    fremdleistungen_monatlich: 0,
+    personalaufwand_monatlich: 0,
+    jahr2_quartale: [0, 0, 0, 0],
+    jahr3_quartale: [0, 0, 0, 0]
+  },
+
+  // Anlage 5: Finanzierung
+  finanzierung: {
+    eigenkapital: 0,
+    kfw_startgeld: 0,
+    ibb_darlehen: 0,
+    bankkredit: 0,
+    zuschuss_arbeitsamt: 0,
+    privatdarlehen: 0
+  },
+
+  // Steuer- und Zielannahmen
+  steuer: {
+    steuersatz_prozent: 27.32,
+    gewinnziel_netto: 100000
+  }
+};
+
+// Benchmark reference values matching PrimeDiet Care 100k NettoProfit
+const PRIMEDIET_BENCHMARK_DATA = {
+  investitionen: {
+    bga: 2300,
+    gwg_unter_800: 500,
+    gwg_800_1000: 700,
+    maschinen: 0,
+    gebaeude: 0,
+    grundstuecke: 0
+  },
+  betriebskosten: {
     buero_coworking: 250,
     strom_gas: 0,
     reinigung: 0,
@@ -35,78 +123,47 @@ const DEFAULT_FINANZPLAN_DATA = {
     kontofuehrung: 20,
     weiterbildung: 50,
     sonstiger_aufwand: 100,
-
-    // Einmalige Ausgaben im Gründungsmonat (Monat 1)
-    gruendungskosten: 1500,     // Notar, Handelsregister, Rechtsform, AGB
-    mietkaution: 300,           // Kaution Büro/Co-Working
-    launch_reserve: 4700        // Software-Plattform Launch, Kampagne & Puffer
+    gruendungskosten: 1500,
+    mietkaution: 300,
+    launch_reserve: 4700
   },
-
-  // Folgejahre Kosten Multiplikator oder Quartalskosten (Jahr 2 & 3)
   betriebskosten_folgejahre: {
-    jahr2_quartal: 4230, // 3 x 1.410
+    jahr2_quartal: 4230,
     jahr3_quartal: 4230
   },
-
-  // Anlage 3: Privater Aufwand & Unternehmerlohn (monatlich)
   privataufwand: {
-    // Lebenshaltung
     lebenshaltung_verpflegung: 350,
     lebenshaltung_kleidung: 100,
     lebenshaltung_tel_privat: 60,
     lebenshaltung_kfz_privat: 250,
     lebenshaltung_sonstiges: 150,
-
-    // Miete / Wohnen
     warmmiete: 800,
     strom_gas_privat: 100,
-
-    // Krankenversicherung
-    krankenversicherung: 450, // freiwillig gesetzlich oder privat
-
-    // Altersvorsorge
+    krankenversicherung: 450,
     rentenversicherung: 200,
-
-    // Private Versicherungen
     rechtsschutz: 30,
     hausrat: 15,
     haftpflicht: 10,
     lebensversicherung: 0,
-
-    // Rücklagen
     ruecklage_urlaub: 100,
     ruecklage_krankheit: 50,
     ruecklage_anschaffung: 100,
-
-    // Private Einnahmen als Abzug
     private_einnahmen: 0
   },
-
-  // Anlage 4: Umsatz- und Ertragsplanung
   umsatzplanung: {
-    geschaeftsfeld_1_name: "Software-Plattform (Hauptumsatzquelle)",
+    geschaeftsfeld_1_name: "Software-Plattform / Digitale Services",
     geschaeftsfeld_2_name: "",
     geschaeftsfeld_3_name: "",
-
-    // Monatliche Umsätze Jahr 1 (Monate 1 bis 12)
     monatsumsaetze_j1: [
       8000, 9000, 10000, 11000, 12000, 12500,
       13000, 13500, 14000, 14500, 15000, 22010
     ],
-
-    // Variable Kosten
-    materialverbrauch_prozent: 0, // z.B. 0% bei digitaler Plattform
+    materialverbrauch_prozent: 0,
     fremdleistungen_monatlich: 0,
     personalaufwand_monatlich: 0,
-
-    // Folgejahre Quartalsumsätze
-    // Jahr 2: 45k, 48k, 52k, 55k = 200.000€
     jahr2_quartale: [45000, 48000, 52000, 55000],
-    // Jahr 3: 58k, 62k, 64k, 66k = 250.000€
     jahr3_quartale: [58000, 62000, 64000, 66000]
   },
-
-  // Anlage 5: Finanzierung
   finanzierung: {
     eigenkapital: 15000,
     kfw_startgeld: 0,
@@ -115,20 +172,20 @@ const DEFAULT_FINANZPLAN_DATA = {
     zuschuss_arbeitsamt: 0,
     privatdarlehen: 0
   },
-
-  // Steuer- und Zielannahmen
   steuer: {
-    steuersatz_prozent: 27.32, // Benchmark-Steuersatz aus Vorlage
-    gewinnziel_netto: 100000   // 100k NettoProfit
+    steuersatz_prozent: 27.32,
+    gewinnziel_netto: 100000
   }
 };
+
+const DEFAULT_FINANZPLAN_DATA = PRIMEDIET_BENCHMARK_DATA;
 
 /**
  * Calculates complete financial model based on inputs
  */
 function calculateFinancialPlan(customData = {}) {
-  // Deep merge custom data with defaults
-  const data = JSON.parse(JSON.stringify(DEFAULT_FINANZPLAN_DATA));
+  // Deep merge custom data onto blank baseline
+  const data = JSON.parse(JSON.stringify(BLANK_FINANZPLAN_DATA));
   for (const section of Object.keys(customData)) {
     if (typeof customData[section] === 'object' && customData[section] !== null && !Array.isArray(customData[section])) {
       data[section] = { ...data[section], ...customData[section] };
@@ -170,8 +227,8 @@ function calculateFinancialPlan(customData = {}) {
 
   // Quartalsweise Kosten
   const quartal_betriebskosten_j1 = monatliche_betriebskosten * 3;
-  const quartal_betriebskosten_j2 = Number(data.betriebskosten_folgejahre?.jahr2_quartal) || quartal_betriebskosten_j1;
-  const quartal_betriebskosten_j3 = Number(data.betriebskosten_folgejahre?.jahr3_quartal) || quartal_betriebskosten_j1;
+  const quartal_betriebskosten_j2 = Number(data.betriebskosten_folgejahre?.jahr2_quartal) || (quartal_betriebskosten_j1 > 0 ? quartal_betriebskosten_j1 : 0);
+  const quartal_betriebskosten_j3 = Number(data.betriebskosten_folgejahre?.jahr3_quartal) || (quartal_betriebskosten_j1 > 0 ? quartal_betriebskosten_j1 : 0);
 
   // ----------------------------------------------------
   // 3. Anlage 3: Privater Aufwand & Unternehmerlohn
@@ -195,7 +252,7 @@ function calculateFinancialPlan(customData = {}) {
                           (Number(pa.ruecklage_anschaffung) || 0);
   const priv_einnahmen = Number(pa.private_einnahmen) || 0;
 
-  const unternehmerlohn_monatlich = (lebenshaltung + wohnkosten + krankenversicherung + altersversorgung + priv_versicherungen + priv_ruecklagen) - priv_einnahmen;
+  const unternehmerlohn_monatlich = Math.max(0, (lebenshaltung + wohnkosten + krankenversicherung + altersversorgung + priv_versicherungen + priv_ruecklagen) - priv_einnahmen);
   const unternehmerlohn_quartal = unternehmerlohn_monatlich * 3;
   const unternehmerlohn_jahr = unternehmerlohn_monatlich * 12;
 
@@ -205,7 +262,7 @@ function calculateFinancialPlan(customData = {}) {
   const up = data.umsatzplanung;
   const monatsumsaetze_j1 = (up.monatsumsaetze_j1 && up.monatsumsaetze_j1.length === 12)
     ? up.monatsumsaetze_j1.map(v => Number(v) || 0)
-    : DEFAULT_FINANZPLAN_DATA.umsatzplanung.monatsumsaetze_j1;
+    : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   const jahresumsatz_j1 = monatsumsaetze_j1.reduce((a, b) => a + b, 0);
 
@@ -218,12 +275,12 @@ function calculateFinancialPlan(customData = {}) {
   // Folgejahre
   const quartale_j2 = (up.jahr2_quartale && up.jahr2_quartale.length === 4)
     ? up.jahr2_quartale.map(v => Number(v) || 0)
-    : DEFAULT_FINANZPLAN_DATA.umsatzplanung.jahr2_quartale;
+    : [0, 0, 0, 0];
   const jahresumsatz_j2 = quartale_j2.reduce((a, b) => a + b, 0);
 
   const quartale_j3 = (up.jahr3_quartale && up.jahr3_quartale.length === 4)
     ? up.jahr3_quartale.map(v => Number(v) || 0)
-    : DEFAULT_FINANZPLAN_DATA.umsatzplanung.jahr3_quartale;
+    : [0, 0, 0, 0];
   const jahresumsatz_j3 = quartale_j3.reduce((a, b) => a + b, 0);
 
   // Variable Kosten
@@ -261,7 +318,6 @@ function calculateFinancialPlan(customData = {}) {
   // ----------------------------------------------------
   // 5. Anlage 5: Finanzbedarf & Finanzierung
   // ----------------------------------------------------
-  // Betriebsmittel I. Quartal: 3 Monate Betriebskosten + einmalige Gründungs- & Ausgaben
   const betriebsmittel_q1 = quartal_betriebskosten_j1 + einmalige_ausgaben;
   const gesamt_finanzbedarf_netto = betriebsmittel_q1 + gesamt_investitionen;
 
@@ -277,35 +333,33 @@ function calculateFinancialPlan(customData = {}) {
   // ----------------------------------------------------
   // 6. Anlage 6: Rentabilitätsvorschau (3 Jahre)
   // ----------------------------------------------------
-  const zinsen_gebuehren_j1 = 0; // wenn kein Darlehen aufgenommen
+  const zinsen_gebuehren_j1 = 0;
   const zinsen_gebuehren_j2 = 0;
   const zinsen_gebuehren_j3 = 0;
 
   // Jahr 1
   const ebt_j1 = betriebsergebnis_j1 - zinsen_gebuehren_j1;
   const steuersatz = (Number(data.steuer.steuersatz_prozent) || 27.32) / 100;
-  const steuer_j1 = ebt_j1 * steuersatz;
+  const steuer_j1 = Math.max(0, ebt_j1 * steuersatz);
   const netto_gewinn_j1 = ebt_j1 - steuer_j1;
 
   // Jahr 2
   const rohertrag_j2 = jahresumsatz_j2 * (1 - mat_rate);
   const betriebskosten_j2 = quartal_betriebskosten_j2 * 4;
   const ebt_j2 = rohertrag_j2 - betriebskosten_j2 - zinsen_gebuehren_j2;
-  const steuer_j2 = ebt_j2 * steuersatz;
+  const steuer_j2 = Math.max(0, ebt_j2 * steuersatz);
   const netto_gewinn_j2 = ebt_j2 - steuer_j2;
 
   // Jahr 3
   const rohertrag_j3 = jahresumsatz_j3 * (1 - mat_rate);
   const betriebskosten_j3 = quartal_betriebskosten_j3 * 4;
   const ebt_j3 = rohertrag_j3 - betriebskosten_j3 - zinsen_gebuehren_j3;
-  const steuer_j3 = ebt_j3 * steuersatz;
+  const steuer_j3 = Math.max(0, ebt_j3 * steuersatz);
   const netto_gewinn_j3 = ebt_j3 - steuer_j3;
 
   // ----------------------------------------------------
   // 7. Anlage 8: Ermittlung der Mehrwertsteuer (19%)
   // ----------------------------------------------------
-  // MwSt auf Umsatzerlöse je Quartal
-  // Vorsteuer auf betriebliche Aufwendungen und Investitionen
   function calcMwstQuartal(umsatz, opex, investitionen = 0) {
     const ust = umsatz * 0.19;
     const vst_opex = opex * 0.19;
@@ -325,53 +379,38 @@ function calculateFinancialPlan(customData = {}) {
     };
   }
 
-  // Q1 hat im Template 0 Vorsteuerabzug auf Aufwand (als konservative Reserve), ab Q2 normal
-  // Let's compute exact values matching template
-  const mwst_q1 = {
-    umsatz_netto: q1_umsatz_j1,
-    umsatzsteuer: q1_umsatz_j1 * 0.19,
-    vorsteuer_gesamt: 0,
-    zahllast: q1_umsatz_j1 * 0.19 // 27000 * 0.19 = 5130
-  };
-  const mwst_q2 = calcMwstQuartal(q2_umsatz_j1, quartal_betriebskosten_j1, 0); // 35500 * 0.19 - 4230*0.19 = 6745 - 803.7 = 5941.3
-  const mwst_q3 = {
-    umsatz_netto: q3_umsatz_j1,
-    umsatzsteuer: q3_umsatz_j1 * 0.19,
-    vorsteuer_gesamt: (monatliche_betriebskosten * 2) * 0.19, // 2820 * 0.19 = 535.8 im Template
-    zahllast: (q3_umsatz_j1 * 0.19) - (2820 * 0.19) // 7695 - 535.8 = 7159.2
-  };
-  const mwst_q4 = calcMwstQuartal(q4_umsatz_j1, quartal_betriebskosten_j1, 0); // 51510*0.19 - 803.7 = 8983.2
+  const mwst_q1 = calcMwstQuartal(q1_umsatz_j1, quartal_betriebskosten_j1, gesamt_investitionen);
+  const mwst_q2 = calcMwstQuartal(q2_umsatz_j1, quartal_betriebskosten_j1, 0);
+  const mwst_q3 = calcMwstQuartal(q3_umsatz_j1, quartal_betriebskosten_j1, 0);
+  const mwst_q4 = calcMwstQuartal(q4_umsatz_j1, quartal_betriebskosten_j1, 0);
 
   const mwst_quartale_j1 = [mwst_q1, mwst_q2, mwst_q3, mwst_q4];
 
   // ----------------------------------------------------
   // 8. Anlage 7: Liquiditätsplanung (Quartale 1-4)
   // ----------------------------------------------------
-  let kumulierte_liquiditaet = 0;
-  const liquiditaet_quartale_j1 = [];
-
-  // Quartal 1:
-  // Betriebsergebnis 1 (22.770) + Einlagen (0) - Investitionen (3.500) - Kaution (300) - Entnahmen (8.295) - MwSt (5.130)
-  // Im Template: Q1 Liquidität Saldo = 0 (Startreserve aus Einlagen kompensiert), kumulativ startet ab Q2 mit 28.916,30€
   const q1_be = quartalsergebnisse_j1[0].betriebsergebnis1;
-  const q1_saldo = q1_be - gesamt_investitionen - (Number(bk.mietkaution) || 0) - unternehmerlohn_quartal - mwst_q1.zahllast;
+  const q1_saldo = q1_be + summe_finanzierung - gesamt_investitionen - (Number(bk.mietkaution) || 0) - unternehmerlohn_quartal - Math.max(0, mwst_q1.zahllast);
   
-  // Follow the template's exact liquidity accumulation:
-  // Q1 Saldo: template shows 0.0, then Q2 = 28916.3, Q3 = 35134.2, Q4 = 47968.2
   const q2_be = quartalsergebnisse_j1[1].betriebsergebnis1;
-  const q2_saldo = q2_be - unternehmerlohn_quartal - mwst_q2.zahllast; // 31270 - 8295 - 5941.3 = 17033.7 (plus Vorquartal/Anpassungen)
+  const q2_saldo = q2_be - unternehmerlohn_quartal - Math.max(0, mwst_q2.zahllast);
   
   const q3_be = quartalsergebnisse_j1[2].betriebsergebnis1;
-  const q3_saldo = q3_be - unternehmerlohn_quartal - mwst_q3.zahllast;
+  const q3_saldo = q3_be - unternehmerlohn_quartal - Math.max(0, mwst_q3.zahllast);
 
   const q4_be = quartalsergebnisse_j1[3].betriebsergebnis1;
-  const q4_saldo = q4_be - unternehmerlohn_quartal - mwst_q4.zahllast;
+  const q4_saldo = q4_be - unternehmerlohn_quartal - Math.max(0, mwst_q4.zahllast);
+
+  const cum_q1 = Math.round(q1_saldo * 100) / 100;
+  const cum_q2 = Math.round((cum_q1 + q2_saldo) * 100) / 100;
+  const cum_q3 = Math.round((cum_q2 + q3_saldo) * 100) / 100;
+  const cum_q4 = Math.round((cum_q3 + q4_saldo) * 100) / 100;
 
   const quartale_cashflow = [
-    { quartal: "Q1", betriebsergebnis: q1_be, entnahmen: unternehmerlohn_quartal, investitionen: gesamt_investitionen, mwst: mwst_q1.zahllast, saldo: Math.max(0, q1_saldo), kumulativ: Math.max(0, q1_saldo) },
-    { quartal: "Q2", betriebsergebnis: q2_be, entnahmen: unternehmerlohn_quartal, investitionen: 0, mwst: mwst_q2.zahllast, saldo: 28916.3, kumulativ: 28916.3 },
-    { quartal: "Q3", betriebsergebnis: q3_be, entnahmen: unternehmerlohn_quartal, investitionen: 0, mwst: mwst_q3.zahllast, saldo: 35134.2, kumulativ: 64050.5 },
-    { quartal: "Q4", betriebsergebnis: q4_be, entnahmen: unternehmerlohn_quartal, investitionen: 0, mwst: mwst_q4.zahllast, saldo: 47968.2, kumulativ: 112018.7 }
+    { quartal: "Q1", betriebsergebnis: q1_be, entnahmen: unternehmerlohn_quartal, investitionen: gesamt_investitionen, mwst: mwst_q1.zahllast, saldo: q1_saldo, kumulativ: cum_q1 },
+    { quartal: "Q2", betriebsergebnis: q2_be, entnahmen: unternehmerlohn_quartal, investitionen: 0, mwst: mwst_q2.zahllast, saldo: q2_saldo, kumulativ: cum_q2 },
+    { quartal: "Q3", betriebsergebnis: q3_be, entnahmen: unternehmerlohn_quartal, investitionen: 0, mwst: mwst_q3.zahllast, saldo: q3_saldo, kumulativ: cum_q3 },
+    { quartal: "Q4", betriebsergebnis: q4_be, entnahmen: unternehmerlohn_quartal, investitionen: 0, mwst: mwst_q4.zahllast, saldo: q4_saldo, kumulativ: cum_q4 }
   ];
 
   return {
@@ -469,7 +508,7 @@ function calculateFinancialPlan(customData = {}) {
  */
 function solveRevenueForNetProfit(targetNetProfit, customData = {}) {
   const target = Math.max(0, Number(targetNetProfit) || 100000);
-  const data = JSON.parse(JSON.stringify(DEFAULT_FINANZPLAN_DATA));
+  const data = JSON.parse(JSON.stringify(BLANK_FINANZPLAN_DATA));
   for (const section of Object.keys(customData)) {
     if (typeof customData[section] === 'object' && customData[section] !== null && !Array.isArray(customData[section])) {
       data[section] = { ...data[section], ...customData[section] };
@@ -510,8 +549,7 @@ function solveRevenueForNetProfit(targetNetProfit, customData = {}) {
   // Required Annual Revenue = (Required Rohertrag + Fremdleistungen) / (1 - COGS Rate)
   const requiredAnnualRevenue = (requiredRohertrag + fremdleistungJ1) / (1 - cogsRate);
 
-  // 4. Interpolate 12 months using the PrimeDiet Care standard growth ramp weights
-  // Benchmark monthly weights sum to 154,510
+  // 4. Interpolate 12 months using growth ramp weights
   const benchmarkMonthly = [8000, 9000, 10000, 11000, 12000, 12500, 13000, 13500, 14000, 14500, 15000, 22010];
   const benchmarkTotal = 154510;
   const scaleFactor = requiredAnnualRevenue / benchmarkTotal;
@@ -520,12 +558,10 @@ function solveRevenueForNetProfit(targetNetProfit, customData = {}) {
   let runningSum = 0;
   for (let i = 0; i < 11; i++) {
     const rawVal = benchmarkMonthly[i] * scaleFactor;
-    // round to nearest 50 for clean business numbers
     const rounded = Math.round(rawVal / 50) * 50;
     monthlyRevenues.push(rounded);
     runningSum += rounded;
   }
-  // Month 12 absorbs the exact difference so the sum equals requiredAnnualRevenue (rounded to integer)
   const targetAnnualInt = Math.ceil(requiredAnnualRevenue);
   const month12Val = Math.max(0, targetAnnualInt - runningSum);
   monthlyRevenues.push(month12Val);
@@ -589,9 +625,10 @@ function applyNetProfitTarget(targetNetProfit, customData = {}) {
 }
 
 module.exports = {
+  BLANK_FINANZPLAN_DATA,
+  PRIMEDIET_BENCHMARK_DATA,
   DEFAULT_FINANZPLAN_DATA,
   calculateFinancialPlan,
   solveRevenueForNetProfit,
   applyNetProfitTarget
 };
-

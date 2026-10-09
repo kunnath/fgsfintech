@@ -846,8 +846,8 @@
     <div class="brand">
       <div class="brand-logo">🤖</div>
       <div class="brand-text">
-        <h1 id="uiBrandTitle">FGSBot • Finanzplanungs-Assistent</h1>
-        <p id="uiBrandSub">Finanzplanung 2026 PrimeDiet Care (100k NettoProfit Modell)</p>
+        <h1 id="uiBrandTitle">FGSBot • Finanzplanungs- & Businessplan-Assistent</h1>
+        <p id="uiBrandSub">Individuelle Finanzplanung & 100k Benchmark-Modell</p>
       </div>
     </div>
     <div class="header-actions">
@@ -856,8 +856,8 @@
         <button class="lang-btn active" id="langBtnDe" onclick="setLanguage('de')">🇩🇪 DE</button>
         <button class="lang-btn" id="langBtnEn" onclick="setLanguage('en')">🇬🇧 EN</button>
       </div>
-      <button class="btn btn-secondary" id="btnLoadPreset" onclick="loadPreset()">⚡ 100k Vorlage laden</button>
-      <button class="btn btn-secondary" id="btnReset" onclick="resetPlan()">🔄 Neu starten</button>
+      <button class="btn btn-secondary" id="btnLoadPreset" onclick="loadPreset()">⚡ 100k Musterplan laden</button>
+      <button class="btn btn-secondary" id="btnReset" onclick="resetPlan()">🔄 Eigenen Plan neu starten</button>
       <button class="btn btn-accent" id="btnExportExcel" onclick="exportExcel()">📥 Excel herunterladen (.xlsx)</button>
     </div>
   </header>
@@ -1027,10 +1027,10 @@
     // UI Dictionary for German & English
     const I18N = {
       de: {
-        brandTitle: "FGSBot • Finanzplanungs-Assistent",
-        brandSub: "Finanzplanung 2026 PrimeDiet Care (100k NettoProfit Modell)",
-        btnPreset: "⚡ 100k Vorlage laden",
-        btnReset: "🔄 Neu starten",
+        brandTitle: "FGSBot • Finanzplanungs- & Businessplan-Assistent",
+        brandSub: "Individuelle Finanzplanung & 100k Benchmark-Modell",
+        btnPreset: "⚡ 100k Musterplan laden",
+        btnReset: "🔄 Eigenen Plan neu starten",
         btnExport: "📥 Excel herunterladen (.xlsx)",
         navPills: [
           "1. Investitionen", "2. Betriebskosten", "3. Unternehmerlohn", "4. Ertragsplan",
@@ -1076,13 +1076,13 @@
           next: "⏩ Weiter",
           editInChat: "💬 Im Chat bearbeiten"
         },
-        resetConfirm: "Finanzplan zurücksetzen und von vorne starten?"
+        resetConfirm: "Finanzplan zurücksetzen und mit einem leeren eigenen Plan neu starten?"
       },
       en: {
-        brandTitle: "FGSBot • Financial Planning Assistant",
-        brandSub: "Financial Plan 2026 PrimeDiet Care (100k Net Profit Model)",
-        btnPreset: "⚡ Load 100k Preset",
-        btnReset: "🔄 Restart",
+        brandTitle: "FGSBot • Financial & Business Planning Assistant",
+        brandSub: "Custom Financial Planning & 100k Benchmark Model",
+        btnPreset: "⚡ Load 100k Benchmark",
+        btnReset: "🔄 Start Own Plan (Reset)",
         btnExport: "📥 Download Excel (.xlsx)",
         navPills: [
           "1. Investments", "2. OpEx (Expenses)", "3. Owner's Draw", "4. Revenue Plan",
@@ -1128,7 +1128,7 @@
           next: "⏩ Next",
           editInChat: "💬 Edit in Chat"
         },
-        resetConfirm: "Reset financial plan and start over?"
+        resetConfirm: "Reset financial plan and start fresh with an empty custom plan?"
       }
     };
 
@@ -1600,10 +1600,10 @@
                 </tr>
               </thead>
               <tbody>
-                <tr><td><strong>${isEn ? 'Office & IT Equipment' : 'Betriebs- & Geschäftsausstattung (BGA)'}</strong></td><td>${isEn ? 'Laptops (1,500 €), Branding & Website (800 €)' : 'Laptops (1.500 €), Branding & Website (800 €)'}</td><td class="num">${fmt(a1.bga)}</td></tr>
-                <tr><td><strong>${isEn ? 'Low-Value Assets (< 800 €)' : 'GWG unter 800 €'}</strong></td><td>${isEn ? 'Test devices, peripherals, printers' : 'Testgeräte, Zubehör, Drucker'}</td><td class="num">${fmt(a1.gwg_unter_800)}</td></tr>
-                <tr><td><strong>${isEn ? 'Assets (800 € - 1,000 €)' : 'GWG 800 - 1.000 €'}</strong></td><td>${isEn ? 'Tablet, specialized hardware' : 'Tablet, Spezial-Hardware'}</td><td class="num">${fmt(a1.gwg_800_1000)}</td></tr>
-                <tr><td><strong>${isEn ? 'Machinery (> 1,000 €)' : 'Maschinen (> 1.000 €)'}</strong></td><td>${isEn ? 'Production machinery & equipment' : 'Großgeräte & Anlagen'}</td><td class="num">${fmt(a1.maschinen)}</td></tr>
+                <tr><td><strong>${isEn ? 'Office & IT Equipment (CapEx)' : 'Betriebs- & Geschäftsausstattung (BGA)'}</strong></td><td>${isEn ? 'Hardware, laptops, branding, web setup' : 'Hardware, Laptops, Büro- & IT-Ausstattung'}</td><td class="num">${fmt(a1.bga)}</td></tr>
+                <tr><td><strong>${isEn ? 'Low-Value Assets (< 800 €)' : 'GWG unter 800 €'}</strong></td><td>${isEn ? 'Accessories, peripherals, printers, small tools' : 'Testgeräte, Zubehör, Drucker, Kleinwerkzeuge'}</td><td class="num">${fmt(a1.gwg_unter_800)}</td></tr>
+                <tr><td><strong>${isEn ? 'Assets (800 € - 1,000 €)' : 'GWG 800 - 1.000 €'}</strong></td><td>${isEn ? 'Tablet, specialized hardware & pooled assets' : 'Tablet, Spezialausstattung & Sammelposten'}</td><td class="num">${fmt(a1.gwg_800_1000)}</td></tr>
+                <tr><td><strong>${isEn ? 'Machinery & Systems (> 1,000 €)' : 'Maschinen & Anlagen (> 1.000 €)'}</strong></td><td>${isEn ? 'Production machinery, systems & large assets' : 'Großgeräte, Maschinen & Betriebsanlagen'}</td><td class="num">${fmt(a1.maschinen)}</td></tr>
                 <tr class="total-row"><td><strong>${isEn ? 'Total Investments' : 'Gesamt-Investitionen'}</strong></td><td>${isEn ? 'Total capital expenditures' : 'Summe aller Anschaffungen'}</td><td class="num">${fmt(a1.gesamt)}</td></tr>
               </tbody>
             </table>
