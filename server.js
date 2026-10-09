@@ -74,6 +74,8 @@ async function handleApiRequest(req, res, pathname) {
     cleanPath = '/api' + cleanPath;
   }
 
+  const { session, sessionId } = await getSession(req);
+
   // POST /api/auth/register or /auth/register
   if (req.method === 'POST' && (cleanPath === '/api/auth/register' || cleanPath === '/api/register')) {
     let body = '';
