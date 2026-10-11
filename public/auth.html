@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>ConnectoryFinAssistant - Sign In & Registration / Anmeldung</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,6 +37,7 @@
 
     body {
       min-height: 100vh;
+      min-height: 100dvh;
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg-dark);
       background-image: 
@@ -47,21 +48,21 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 20px 16px calc(20px + env(safe-area-inset-bottom, 0px)) 16px;
       line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
     }
 
     /* Top Language & Back Bar */
     .top-nav {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      right: 20px;
+      width: 100%;
+      max-width: 480px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      max-width: 1100px;
-      margin: 0 auto;
+      margin: 0 auto 16px auto;
+      padding: 0 4px;
     }
 
     .nav-back-link {
@@ -378,6 +379,38 @@
     .card-footer a:hover {
       text-decoration: underline;
     }
+
+    @media (max-width: 600px) {
+      body {
+        justify-content: flex-start;
+        padding: 16px 12px calc(24px + env(safe-area-inset-bottom, 0px)) 12px;
+      }
+      .top-nav {
+        margin-bottom: 12px;
+      }
+      .auth-wrapper {
+        margin: 8px auto 20px auto;
+      }
+      .auth-card {
+        padding: 20px 16px;
+        border-radius: var(--radius-md);
+      }
+      .brand-logo {
+        width: 44px;
+        height: 44px;
+        font-size: 22px;
+      }
+      .brand-header h1 {
+        font-size: 20px;
+      }
+      .form-control {
+        font-size: 16px; /* Prevents auto-zoom on iOS */
+        padding: 12px 14px 12px 38px;
+      }
+      .btn-submit {
+        padding: 14px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -625,6 +658,22 @@
       alertBox.style.display = 'none';
     }
 
+    function getApiBaseUrl() {
+      const h = window.location.hostname;
+      if (!h ||
+          h === 'localhost' ||
+          h === '127.0.0.1' ||
+          h === 'connectoryfin.onrender.com' ||
+          h.endsWith('.onrender.com') ||
+          h.endsWith('.local') ||
+          h.startsWith('192.168.') ||
+          h.startsWith('10.') ||
+          /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(h)) {
+        return '';
+      }
+      return 'https://connectoryfin.onrender.com';
+    }
+
     async function handleLogin(e) {
       e.preventDefault();
       hideAlert();
@@ -632,10 +681,7 @@
       const password = document.getElementById('loginPassword').value;
       const btn = document.getElementById('btnSubmitLogin');
 
-      // Base URL for Render Backend
-      const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? ''
-        : 'https://connectoryfin.onrender.com';
+      const API_BASE_URL = getApiBaseUrl();
 
       btn.disabled = true;
       try {
@@ -676,10 +722,7 @@
       const confirm = document.getElementById('regPasswordConfirm').value;
       const btn = document.getElementById('btnSubmitRegister');
 
-      // Base URL for Render Backend
-      const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? ''
-        : 'https://connectoryfin.onrender.com';
+      const API_BASE_URL = getApiBaseUrl();
 
       if (password !== confirm) {
         showAlert(I18N[currentLang].pwdMismatch, 'danger');

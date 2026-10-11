@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>ConnectoryFinAssistant - Financial Planning Assistant / Finanzplanungs-Chatbot</title>
   <script>
     // Enforce authentication gate: redirect immediately to /auth.html if user is not signed in
@@ -52,7 +52,9 @@
 
     html, body {
       height: 100vh;
+      height: 100dvh;
       max-height: 100vh;
+      max-height: 100dvh;
       margin: 0;
       padding: 0;
       overflow: hidden;
@@ -62,9 +64,11 @@
       display: flex;
       flex-direction: column;
       line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    /* Top App Header (Fixed 60px) */
+    /* Top App Header (Fixed 60px desktop, 56px mobile) */
     header {
       flex: 0 0 60px;
       height: 60px;
@@ -75,12 +79,14 @@
       align-items: center;
       justify-content: space-between;
       z-index: 50;
+      position: relative;
     }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 12px;
+      min-width: 0;
     }
 
     .brand-logo {
@@ -93,6 +99,11 @@
       justify-content: center;
       font-size: 18px;
       box-shadow: 0 2px 10px rgba(59, 130, 246, 0.4);
+      flex-shrink: 0;
+    }
+
+    .brand-text {
+      min-width: 0;
     }
 
     .brand-text h1 {
@@ -102,18 +113,25 @@
       background: linear-gradient(90deg, #60a5fa, #34d399);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .brand-text p {
       font-size: 11px;
       color: var(--text-muted);
       font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .header-actions {
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-shrink: 0;
     }
 
     /* Language Switcher Toggle */
@@ -124,7 +142,6 @@
       border-radius: 8px;
       padding: 2px;
       gap: 2px;
-      margin-right: 4px;
     }
 
     .lang-btn {
@@ -165,6 +182,7 @@
       gap: 6px;
       transition: all 0.15s ease;
       font-family: inherit;
+      white-space: nowrap;
     }
 
     .btn-secondary {
@@ -210,7 +228,8 @@
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
     }
 
-    .user-profile-badge .user-avatar {
+    .user-profile-badge .user-avatar,
+    .drawer-user-section .user-avatar {
       width: 22px;
       height: 22px;
       border-radius: 50%;
@@ -249,13 +268,237 @@
       box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
     }
 
+    /* Mobile Menu Toggle Button (Visible only on < 900px) */
+    .btn-mobile-menu {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: #19253d;
+      border: 1px solid #2d3e5e;
+      color: #f8fafc;
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-mobile-menu:hover {
+      background: #233454;
+      border-color: #3b82f6;
+    }
+
+    /* Mobile Segmented View Switcher (Only visible < 900px) */
+    .mobile-view-switcher {
+      display: none;
+      flex: 0 0 44px;
+      height: 44px;
+      background: #0b1120;
+      border-bottom: 1px solid var(--border);
+      padding: 4px 8px;
+      gap: 6px;
+      z-index: 45;
+    }
+
+    .m-view-tab {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: #131c31;
+      border: 1px solid #22314e;
+      border-radius: 8px;
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .m-view-tab.active {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      border-color: #60a5fa;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+    }
+
+    .m-view-pill {
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.25);
+      color: #34d399;
+      font-weight: 700;
+    }
+    .m-view-tab.active .m-view-pill {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    /* Mobile Action Drawer & Backdrop */
+    .mobile-drawer-backdrop {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 99;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .mobile-drawer-backdrop.open {
+      display: block;
+      opacity: 1;
+    }
+
+    .mobile-drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: min(85vw, 360px);
+      background: #0f172a;
+      border-left: 1px solid #223250;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: -8px 0 30px rgba(0, 0, 0, 0.7);
+      padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px)) 16px;
+      overflow-y: auto;
+      gap: 16px;
+    }
+    .mobile-drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+    .drawer-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .drawer-close-btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #cbd5e1;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .drawer-user-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #141e34;
+      border: 1px solid #263654;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+    }
+    .drawer-user-info { display: flex; flex-direction: column; }
+    .drawer-user-name { font-size: 13px; font-weight: 700; color: #fff; }
+    .drawer-user-role { font-size: 11px; color: #34d399; font-weight: 600; }
+
+    .drawer-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .drawer-action-btn {
+      padding: 11px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+      background: #172238;
+      color: #f1f5f9;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.15s ease;
+      font-family: inherit;
+      text-align: left;
+    }
+    .drawer-action-btn.primary {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      border-color: #3b82f6;
+    }
+    .drawer-action-btn.accent {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      border-color: #10b981;
+    }
+
+    .drawer-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .drawer-sheet-links {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .drawer-sheet-btn {
+      padding: 8px 10px;
+      background: #131c31;
+      border: 1px solid #233454;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #94a3b8;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+    }
+    .drawer-sheet-btn:hover {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    .drawer-footer {
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .drawer-signout-btn {
+      width: 100%;
+      padding: 11px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: inherit;
+    }
+
     /* Main Container (Fills 100% remaining space) */
     .app-container {
       flex: 1 1 auto;
-      height: calc(100vh - 60px);
       min-height: 0;
-      display: grid;
-      grid-template-columns: 520px 1fr;
       overflow: hidden;
     }
 
@@ -280,20 +523,23 @@
       display: flex;
       gap: 6px;
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
     .sheet-nav-bar::-webkit-scrollbar { display: none; }
 
     .nav-pill {
-      padding: 5px 10px;
+      padding: 6px 11px;
       background: #19253d;
       border: 1px solid #2d3e5e;
       border-radius: 12px;
-      font-size: 11px;
+      font-size: 11.5px;
       font-weight: 600;
       color: #94a3b8;
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.15s ease;
+      font-family: inherit;
     }
 
     .nav-pill:hover {
@@ -319,6 +565,7 @@
       flex-direction: column;
       gap: 14px;
       scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
     }
 
     .chat-messages::-webkit-scrollbar { width: 6px; }
@@ -365,6 +612,8 @@
       border-radius: var(--radius-md);
       font-size: 13.5px;
       line-height: 1.55;
+      max-width: 90%;
+      word-break: break-word;
     }
 
     .message.bot .message-bubble {
@@ -413,7 +662,7 @@
     }
 
     /* ==================================================== */
-    /* PERSISTENT ULTRA-VISIBLE CHAT INPUT DOCK (FIXED AT BOTTOM) */
+    /* PERSISTENT ULTRA-VISIBLE CHAT INPUT DOCK */
     /* ==================================================== */
     .chat-input-dock {
       flex: 0 0 auto;
@@ -432,6 +681,8 @@
       align-items: center;
       justify-content: space-between;
       font-size: 12px;
+      gap: 6px;
+      flex-wrap: wrap;
     }
 
     .dock-title-badge {
@@ -449,6 +700,7 @@
       background: #10b981;
       box-shadow: 0 0 8px #10b981;
       animation: pulseAnim 2s infinite;
+      flex-shrink: 0;
     }
 
     @keyframes pulseAnim {
@@ -467,6 +719,8 @@
       gap: 6px;
       overflow-x: auto;
       padding-bottom: 2px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
     .dock-presets-row::-webkit-scrollbar { display: none; }
 
@@ -484,6 +738,7 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
+      font-family: inherit;
     }
 
     .dock-preset-btn:hover {
@@ -542,6 +797,7 @@
       font-size: 15px;
       font-weight: 600;
       font-family: inherit;
+      min-width: 0;
     }
 
     .dock-input::placeholder {
@@ -565,6 +821,7 @@
       transition: all 0.15s ease;
       font-family: inherit;
       box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+      flex-shrink: 0;
     }
 
     .dock-send-btn:hover {
@@ -582,12 +839,45 @@
       overflow-y: auto;
       padding: 16px 20px;
       gap: 16px;
+      -webkit-overflow-scrolling: touch;
     }
 
     .dashboard-section::-webkit-scrollbar { width: 8px; }
     .dashboard-section::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
 
-    /* Top 6 KPI Cards */
+    /* Mobile Chat Quickjump Bar */
+    .mobile-chat-quickjump {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+      border: 1px solid #3b82f6;
+      border-radius: var(--radius-sm);
+      padding: 9px 12px;
+      cursor: pointer;
+      color: #fff;
+      font-size: 12.5px;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    }
+    .quickjump-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .quickjump-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 6px #34d399;
+    }
+    .quickjump-arrow {
+      font-size: 14px;
+      color: #93c5fd;
+    }
+
+    /* Top KPI Cards */
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
@@ -603,6 +893,7 @@
       flex-direction: column;
       justify-content: space-between;
       transition: all 0.2s ease;
+      min-width: 0;
     }
 
     .kpi-card.highlight {
@@ -619,6 +910,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 4px;
     }
 
     .kpi-value {
@@ -627,6 +919,9 @@
       color: #fff;
       margin: 6px 0 2px 0;
       font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .kpi-card.highlight .kpi-value { color: #34d399; }
@@ -639,6 +934,7 @@
       padding: 2px 6px;
       border-radius: 10px;
       font-weight: 700;
+      white-space: nowrap;
     }
 
     /* Goal Seek Control Card */
@@ -649,7 +945,7 @@
       padding: 12px 14px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
 
     .goal-seek-header {
@@ -659,6 +955,8 @@
       font-size: 12px;
       font-weight: 700;
       color: #60a5fa;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .goal-seek-title {
@@ -707,7 +1005,7 @@
       background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       color: #fff;
       border: none;
-      padding: 6px 13px;
+      padding: 7px 13px;
       border-radius: 8px;
       font-size: 12px;
       font-weight: 700;
@@ -718,6 +1016,7 @@
       transition: all 0.15s ease;
       font-family: inherit;
       box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+      white-space: nowrap;
     }
 
     .goal-seek-btn:hover {
@@ -736,12 +1035,13 @@
       background: #19253d;
       border: 1px solid #2e3e5c;
       color: #94a3b8;
-      padding: 4px 8px;
+      padding: 5px 9px;
       border-radius: 6px;
       font-size: 11px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.15s ease;
+      font-family: inherit;
     }
 
     .goal-seek-pill:hover {
@@ -761,10 +1061,10 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      font-size: 11px;
+      font-size: 11.5px;
       color: #cbd5e1;
       background: rgba(15, 23, 42, 0.6);
-      padding: 5px 10px;
+      padding: 6px 12px;
       border-radius: 6px;
       border: 1px solid rgba(255, 255, 255, 0.05);
       flex-wrap: wrap;
@@ -784,6 +1084,7 @@
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
       scrollbar-width: thin;
       scrollbar-color: #3b82f6 #0f192c;
+      -webkit-overflow-scrolling: touch;
     }
 
     .sheet-tabs-container::-webkit-scrollbar {
@@ -853,6 +1154,8 @@
       justify-content: space-between;
       border-bottom: 1px solid var(--border);
       padding-bottom: 10px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .sheet-header-row h2 {
@@ -864,7 +1167,20 @@
       gap: 8px;
     }
 
-    .table-responsive { overflow-x: auto; }
+    .table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: var(--radius-sm);
+    }
+
+    .table-responsive::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb {
+      background: #253859;
+      border-radius: 3px;
+    }
 
     table {
       width: 100%;
@@ -882,11 +1198,13 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
       border-bottom: 1px solid var(--border);
+      white-space: nowrap;
     }
 
     th.num, td.num {
       text-align: right;
       font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap;
     }
 
     td {
@@ -909,6 +1227,189 @@
       color: #34d399;
       background: rgba(16, 185, 129, 0.1);
       border-top: 2px solid #10b981;
+    }
+
+    /* Sticky first column for tables on mobile & horizontal swipe */
+    .table-sticky-col th:first-child,
+    .table-sticky-col td:first-child {
+      position: sticky;
+      left: 0;
+      background: var(--bg-card);
+      z-index: 2;
+      box-shadow: 2px 0 6px rgba(0, 0, 0, 0.35);
+    }
+    .table-sticky-col tr.total-row td:first-child {
+      background: #152238;
+    }
+    .table-sticky-col tr.highlight-row td:first-child {
+      background: #0f262a;
+    }
+
+    /* ==================================================== */
+    /* RESPONSIVE BREAKPOINTS (Desktop, Tablet, Mobile) */
+    /* ==================================================== */
+
+    /* Desktop (>= 900px): Two-pane split */
+    @media (min-width: 900px) {
+      .app-container {
+        display: grid;
+        grid-template-columns: minmax(430px, 480px) 1fr;
+        height: calc(100vh - 60px);
+        height: calc(100dvh - 60px);
+        overflow: hidden;
+      }
+      .chat-section {
+        display: flex !important;
+        height: 100%;
+      }
+      .dashboard-section {
+        display: flex !important;
+        height: 100%;
+      }
+      .mobile-view-switcher {
+        display: none !important;
+      }
+      .btn-mobile-menu {
+        display: none !important;
+      }
+      .mobile-chat-quickjump {
+        display: none !important;
+      }
+    }
+
+    @media (min-width: 1400px) {
+      .app-container {
+        grid-template-columns: 500px 1fr;
+      }
+    }
+
+    /* Tablet (768px - 1199px): 3 columns KPI */
+    @media (min-width: 768px) and (max-width: 1199px) {
+      .kpi-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+    }
+
+    /* Mobile (< 900px): Single-pane with View Switcher */
+    @media (max-width: 899px) {
+      header {
+        flex: 0 0 56px;
+        height: 56px;
+        padding: 0 12px;
+      }
+      .brand-logo {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+      }
+      .brand-text h1 {
+        font-size: 14.5px;
+      }
+      .brand-text p {
+        display: none;
+      }
+      .header-actions .btn {
+        display: none;
+      }
+      .user-profile-container {
+        display: none !important;
+      }
+      .btn-mobile-menu {
+        display: inline-flex !important;
+      }
+
+      .mobile-view-switcher {
+        display: flex !important;
+      }
+
+      .app-container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 56px - 44px);
+        height: calc(100dvh - 56px - 44px);
+        overflow: hidden;
+      }
+
+      body[data-mobile-view="chat"] .chat-section {
+        display: flex !important;
+        width: 100%;
+        height: 100%;
+      }
+      body[data-mobile-view="chat"] .dashboard-section {
+        display: none !important;
+      }
+
+      body[data-mobile-view="dashboard"] .chat-section {
+        display: none !important;
+      }
+      body[data-mobile-view="dashboard"] .dashboard-section {
+        display: flex !important;
+        width: 100%;
+        height: 100%;
+        padding: 12px 10px calc(16px + env(safe-area-inset-bottom, 0px)) 10px;
+      }
+
+      .mobile-chat-quickjump {
+        display: flex !important;
+      }
+
+      .chat-input-dock {
+        padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px)) 12px;
+        gap: 8px;
+      }
+      .dock-input {
+        font-size: 16px; /* Prevents auto-zoom on iOS */
+      }
+      .dock-send-btn {
+        padding: 9px 14px;
+        font-size: 13px;
+      }
+      .dock-preset-btn {
+        padding: 7px 12px;
+        font-size: 12px;
+      }
+    }
+
+    /* Small Mobile (< 650px) */
+    @media (max-width: 649px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+      .kpi-card.highlight {
+        grid-column: span 2;
+      }
+      .kpi-card {
+        padding: 10px;
+      }
+      .kpi-value {
+        font-size: 15.5px;
+      }
+
+      .goal-seek-body {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .goal-seek-input-wrapper {
+        width: 100%;
+      }
+      .goal-seek-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 9px;
+      }
+      .goal-seek-pills {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .goal-seek-pill {
+        text-align: center;
+      }
+      .sheet-content-panel {
+        padding: 12px 10px;
+      }
     }
   </style>
 </head>
@@ -947,8 +1448,77 @@
           <span id="lblSignOutBtn">Abmelden</span>
         </button>
       </div>
+      <!-- Mobile Quick Menu Trigger -->
+      <button class="btn-mobile-menu" id="btnMobileMenu" onclick="toggleMobileMenu()" aria-label="Menü / Quick Actions">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
     </div>
   </header>
+
+  <!-- Mobile Segmented View Switcher (Visible on < 900px) -->
+  <div class="mobile-view-switcher" id="mobileViewSwitcher">
+    <button class="m-view-tab active" id="mTabChat" onclick="switchMobileView('chat')">
+      <span>💬</span>
+      <span id="lblMobileTabChat">Chat-Assistent</span>
+    </button>
+    <button class="m-view-tab" id="mTabDashboard" onclick="switchMobileView('dashboard')">
+      <span>📊</span>
+      <span id="lblMobileTabDashboard">Finanzplan & Tabellen</span>
+      <span class="m-view-pill" id="mViewPillTarget">100k €</span>
+    </button>
+  </div>
+
+  <!-- Mobile Action Drawer & Backdrop -->
+  <div class="mobile-drawer-backdrop" id="mobileDrawerBackdrop" onclick="closeMobileMenu()"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <span class="brand-logo" style="width:28px;height:28px;font-size:14px;">🤖</span>
+        <span>ConnectoryFin</span>
+      </div>
+      <button class="drawer-close-btn" onclick="closeMobileMenu()">✕</button>
+    </div>
+
+    <!-- Mobile User Profile -->
+    <div class="drawer-user-section" id="drawerUserSection">
+      <div class="user-avatar" id="drawerUserAvatarLetter">U</div>
+      <div class="drawer-user-info">
+        <div class="drawer-user-name" id="drawerUserName">User</div>
+        <div class="drawer-user-role" id="lblDrawerRole">Eingeloggt</div>
+      </div>
+    </div>
+
+    <div class="drawer-actions">
+      <button class="drawer-action-btn primary" onclick="loadPreset(); closeMobileMenu();">
+        <span>⚡</span> <span id="lblDrawerPreset">100k Musterplan laden</span>
+      </button>
+      <button class="drawer-action-btn accent" onclick="exportExcel(); closeMobileMenu();">
+        <span>📥</span> <span id="lblDrawerExport">Excel herunterladen (.xlsx)</span>
+      </button>
+      <button class="drawer-action-btn" onclick="resetPlan(); closeMobileMenu();">
+        <span>🔄</span> <span id="lblDrawerReset">Eigenen Plan neu starten</span>
+      </button>
+    </div>
+
+    <div class="drawer-section-title" id="lblDrawerSchedulesTitle">Direkt zu Anlage springen</div>
+    <div class="drawer-sheet-links">
+      <button class="drawer-sheet-btn" onclick="jumpToSheet(1); closeMobileMenu();">1. Investitionen</button>
+      <button class="drawer-sheet-btn" onclick="jumpToSheet(2); closeMobileMenu();">2. Betriebskosten</button>
+      <button class="drawer-sheet-btn" onclick="jumpToSheet(3); closeMobileMenu();">3. Unternehmerlohn</button>
+      <button class="drawer-sheet-btn" onclick="jumpToSheet(4); closeMobileMenu();">4. Ertragsplan</button>
+      <button class="drawer-sheet-btn" onclick="jumpToSheet(5); closeMobileMenu();">5. Finanzbedarf</button>
+      <button class="drawer-sheet-btn" onclick="jumpToSheet(6); closeMobileMenu();">6. Rentabilität</button>
+      <button class="drawer-sheet-btn" onclick="jumpToSheet(7); closeMobileMenu();">7. Liquidität</button>
+      <button class="drawer-sheet-btn" onclick="jumpToSheet(8); closeMobileMenu();">8. MwSt</button>
+    </div>
+
+    <div class="drawer-footer">
+      <button class="drawer-signout-btn" onclick="handleLogout()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        <span id="lblDrawerSignOut">Abmelden</span>
+      </button>
+    </div>
+  </aside>
 
   <!-- App Main Grid -->
   <div class="app-container">
@@ -1002,6 +1572,15 @@
 
     <!-- Right Live Dashboard -->
     <section class="dashboard-section">
+      <!-- Mobile Quick Jump to Chat Banner -->
+      <div class="mobile-chat-quickjump" id="mobileChatQuickjump" onclick="switchMobileView('chat')">
+        <div class="quickjump-left">
+          <span class="quickjump-dot"></span>
+          <span id="quickjumpLabel">💬 Zum Chat-Assistenten (Fragen beantworten)</span>
+        </div>
+        <span class="quickjump-arrow">➔</span>
+      </div>
+
       <!-- Top 6 KPI Cards -->
       <div class="kpi-grid">
         <div class="kpi-card highlight">
@@ -1112,10 +1691,24 @@
     let currentQuestion = null;
     let activeSheetKey = 'anl1';
 
+    function getApiBaseUrl() {
+      const h = window.location.hostname;
+      if (!h ||
+          h === 'localhost' ||
+          h === '127.0.0.1' ||
+          h === 'connectoryfin.onrender.com' ||
+          h.endsWith('.onrender.com') ||
+          h.endsWith('.local') ||
+          h.startsWith('192.168.') ||
+          h.startsWith('10.') ||
+          /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(h)) {
+        return '';
+      }
+      return 'https://connectoryfin.onrender.com';
+    }
+
     // Base URL for Render Backend API
-    const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-      ? ''
-      : 'https://connectoryfin.onrender.com';
+    const API_BASE_URL = getApiBaseUrl();
 
     function getUserId() {
       try {
@@ -1199,6 +1792,17 @@
           next: "⏩ Weiter",
           editInChat: "💬 Im Chat bearbeiten"
         },
+        mobile: {
+          tabChat: "Chat-Assistent",
+          tabDashboard: "Finanzplan & Tabellen",
+          quickjumpToChat: "💬 Zum Chat-Assistenten (Fragen beantworten)",
+          drawerPreset: "⚡ 100k Musterplan laden",
+          drawerExport: "📥 Excel herunterladen (.xlsx)",
+          drawerReset: "🔄 Eigenen Plan neu starten",
+          drawerRole: "Eingeloggt",
+          drawerSignOut: "Abmelden",
+          drawerSchedulesTitle: "Direkt zu Anlage springen"
+        },
         btnSignOut: "Abmelden",
         resetConfirm: "Finanzplan zurücksetzen und mit einem leeren eigenen Plan neu starten?"
       },
@@ -1252,10 +1856,60 @@
           next: "⏩ Next",
           editInChat: "💬 Edit in Chat"
         },
+        mobile: {
+          tabChat: "Chat Assistant",
+          tabDashboard: "Financial Plan & Tables",
+          quickjumpToChat: "💬 Back to Chat Assistant (Answer questions)",
+          drawerPreset: "⚡ Load 100k Benchmark",
+          drawerExport: "📥 Download Excel (.xlsx)",
+          drawerReset: "🔄 Start Own Plan (Reset)",
+          drawerRole: "Signed In",
+          drawerSignOut: "Sign Out",
+          drawerSchedulesTitle: "Jump Directly to Schedule"
+        },
         btnSignOut: "Sign Out",
         resetConfirm: "Reset financial plan and start fresh with an empty custom plan?"
       }
     };
+
+    let activeMobileView = 'chat';
+
+    function switchMobileView(view) {
+      activeMobileView = view;
+      document.body.setAttribute('data-mobile-view', view);
+      const tabChat = document.getElementById('mTabChat');
+      const tabDash = document.getElementById('mTabDashboard');
+      if (tabChat && tabDash) {
+        tabChat.classList.toggle('active', view === 'chat');
+        tabDash.classList.toggle('active', view === 'dashboard');
+      }
+      if (view === 'chat') {
+        const input = document.getElementById('dockInput');
+        if (input && window.innerWidth < 900) {
+          input.focus();
+        }
+      }
+    }
+
+    function toggleMobileMenu() {
+      const drawer = document.getElementById('mobileDrawer');
+      const backdrop = document.getElementById('mobileDrawerBackdrop');
+      if (!drawer || !backdrop) return;
+      const isOpen = drawer.classList.contains('open');
+      if (isOpen) {
+        closeMobileMenu();
+      } else {
+        drawer.classList.add('open');
+        backdrop.classList.add('open');
+      }
+    }
+
+    function closeMobileMenu() {
+      const drawer = document.getElementById('mobileDrawer');
+      const backdrop = document.getElementById('mobileDrawerBackdrop');
+      if (drawer) drawer.classList.remove('open');
+      if (backdrop) backdrop.classList.remove('open');
+    }
 
     function fmt(num) {
       if (num === null || num === undefined || isNaN(num)) return "0 €";
@@ -1329,6 +1983,35 @@
       }
       if (document.getElementById('lblSignOutBtn')) {
         document.getElementById('lblSignOutBtn').innerText = t.btnSignOut || (currentLang === 'en' ? 'Sign Out' : 'Abmelden');
+      }
+
+      // Mobile labels
+      if (document.getElementById('lblMobileTabChat')) {
+        document.getElementById('lblMobileTabChat').innerText = t.mobile.tabChat;
+      }
+      if (document.getElementById('lblMobileTabDashboard')) {
+        document.getElementById('lblMobileTabDashboard').innerText = t.mobile.tabDashboard;
+      }
+      if (document.getElementById('quickjumpLabel')) {
+        document.getElementById('quickjumpLabel').innerText = t.mobile.quickjumpToChat;
+      }
+      if (document.getElementById('lblDrawerPreset')) {
+        document.getElementById('lblDrawerPreset').innerText = t.mobile.drawerPreset;
+      }
+      if (document.getElementById('lblDrawerExport')) {
+        document.getElementById('lblDrawerExport').innerText = t.mobile.drawerExport;
+      }
+      if (document.getElementById('lblDrawerReset')) {
+        document.getElementById('lblDrawerReset').innerText = t.mobile.drawerReset;
+      }
+      if (document.getElementById('lblDrawerRole')) {
+        document.getElementById('lblDrawerRole').innerText = t.mobile.drawerRole;
+      }
+      if (document.getElementById('lblDrawerSignOut')) {
+        document.getElementById('lblDrawerSignOut').innerText = t.mobile.drawerSignOut;
+      }
+      if (document.getElementById('lblDrawerSchedulesTitle')) {
+        document.getElementById('lblDrawerSchedulesTitle').innerText = t.mobile.drawerSchedulesTitle;
       }
 
       // Goal Seek Card
@@ -1579,6 +2262,9 @@
           updateNavPills(sheetNum);
         }
         switchSheetTab('anl' + sheetNum);
+        if (window.innerWidth < 900) {
+          switchMobileView('chat');
+        }
       } catch (err) {
         console.error(err);
       }
@@ -1674,6 +2360,11 @@
       const q4Liq = calc.anlage7?.quartale[3]?.kumulativ || 0;
       document.getElementById('kpiLiquidity').innerText = fmt(q4Liq);
 
+      const mPill = document.getElementById('mViewPillTarget');
+      if (mPill && s) {
+        mPill.innerText = fmt(s.netto_gewinn_j1);
+      }
+
       updateGoalSeekPreview(calc);
     }
 
@@ -1705,7 +2396,7 @@
             <button class="btn btn-secondary" onclick="jumpToSheet(1)">${editBtnText}</button>
           </div>
           <div class="table-responsive">
-            <table>
+            <table class="table-sticky-col">
               <thead>
                 <tr>
                   <th>${isEn ? 'Item' : 'Investitionsposten'}</th>
@@ -1732,7 +2423,7 @@
             <button class="btn btn-secondary" onclick="jumpToSheet(2)">${editBtnText}</button>
           </div>
           <div class="table-responsive">
-            <table>
+            <table class="table-sticky-col">
               <thead>
                 <tr><th>${isEn ? 'Expense Item' : 'Position'}</th><th class="num">${isEn ? 'Monthly' : 'Monatlich'}</th><th class="num">${isEn ? 'Year 1 Total' : 'Jahr 1'}</th></tr>
               </thead>
@@ -1759,7 +2450,7 @@
             <button class="btn btn-secondary" onclick="jumpToSheet(3)">${editBtnText}</button>
           </div>
           <div class="table-responsive">
-            <table>
+            <table class="table-sticky-col">
               <thead>
                 <tr><th>${isEn ? 'Category' : 'Bereich'}</th><th class="num">${isEn ? 'Monthly' : 'Monatlich'}</th><th class="num">${isEn ? 'Annual' : 'Jahr'}</th></tr>
               </thead>
@@ -1782,7 +2473,7 @@
             <button class="btn btn-secondary" onclick="jumpToSheet(4)">${editBtnText}</button>
           </div>
           <div class="table-responsive">
-            <table>
+            <table class="table-sticky-col">
               <thead>
                 <tr><th>${isEn ? 'Month' : 'Monat'}</th><th class="num">${isEn ? 'Net Revenue' : 'Nettoumsatz'}</th><th class="num">${isEn ? 'OpEx' : 'Betriebskosten'}</th><th class="num">${isEn ? 'Operating Profit (EBITDA)' : 'Betriebsergebnis'}</th><th class="num">${isEn ? 'Owner Draw' : 'Unternehmerlohn'}</th></tr>
               </thead>
@@ -1815,7 +2506,7 @@
             <button class="btn btn-secondary" onclick="jumpToSheet(5)">${editBtnText}</button>
           </div>
           <div class="table-responsive">
-            <table>
+            <table class="table-sticky-col">
               <thead>
                 <tr><th>${isEn ? 'Position' : 'Position'}</th><th>${isEn ? 'Calculation Base' : 'Beschreibung'}</th><th class="num">${isEn ? 'Amount' : 'Betrag'}</th></tr>
               </thead>
@@ -1837,7 +2528,7 @@
             <button class="btn btn-secondary" onclick="jumpToSheet(6)">${editBtnText}</button>
           </div>
           <div class="table-responsive">
-            <table>
+            <table class="table-sticky-col">
               <thead>
                 <tr><th>${isEn ? 'P&L Line' : 'Position'}</th><th class="num">${isEn ? 'Year 1' : '1. Jahr'}</th><th class="num">${isEn ? 'Year 2' : '2. Jahr'}</th><th class="num">${isEn ? 'Year 3' : '3. Jahr'}</th></tr>
               </thead>
@@ -1859,7 +2550,7 @@
             <button class="btn btn-secondary" onclick="jumpToSheet(7)">${editBtnText}</button>
           </div>
           <div class="table-responsive">
-            <table>
+            <table class="table-sticky-col">
               <thead>
                 <tr><th>${isEn ? 'Quarter' : 'Quartal'}</th><th class="num">${isEn ? 'EBITDA' : 'Betriebsergebnis'}</th><th class="num">${isEn ? 'Owner Draw' : 'Privatentnahme'}</th><th class="num">${isEn ? 'VAT Balance' : 'MwSt'}</th><th class="num">${isEn ? 'Cumulative Cash Reserve' : 'Liquidität Kumulativ'}</th></tr>
               </thead>
@@ -1885,7 +2576,7 @@
             <button class="btn btn-secondary" onclick="jumpToSheet(8)">${editBtnText}</button>
           </div>
           <div class="table-responsive">
-            <table>
+            <table class="table-sticky-col">
               <thead>
                 <tr><th>${isEn ? 'Quarter' : 'Quartal'}</th><th class="num">${isEn ? 'Net Revenue' : 'Umsatz netto'}</th><th class="num">${isEn ? 'Output VAT (19%)' : 'Umsatzsteuer 19%'}</th><th class="num">${isEn ? 'Input VAT' : 'Vorsteuer'}</th><th class="num">${isEn ? 'VAT Payable' : 'Zahllast'}</th></tr>
               </thead>
@@ -2004,6 +2695,12 @@
             const displayName = user.name || user.email || 'User';
             if (userNameDisplay) userNameDisplay.innerText = displayName;
             if (userAvatarLetter) userAvatarLetter.innerText = displayName.charAt(0).toUpperCase();
+
+            // Also update mobile drawer user profile
+            const drawerUserName = document.getElementById('drawerUserName');
+            const drawerUserAvatarLetter = document.getElementById('drawerUserAvatarLetter');
+            if (drawerUserName) drawerUserName.innerText = displayName;
+            if (drawerUserAvatarLetter) drawerUserAvatarLetter.innerText = displayName.charAt(0).toUpperCase();
           }
           return user;
         } catch (e) {
@@ -2029,6 +2726,7 @@
       const user = checkUserAuth();
       if (!user) return;
 
+      switchMobileView('chat');
       applyLanguageToUI();
       try {
         const res = await apiFetch('/api/init');

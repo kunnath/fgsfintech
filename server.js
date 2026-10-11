@@ -59,7 +59,7 @@ function sendJson(res, statusCode, data) {
   res.end(JSON.stringify(data));
 }
 
-async function handleApiRequest(req, res, pathname) {
+async function handleApiRequest(req, res, pathname, urlObj) {
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
@@ -143,7 +143,8 @@ async function handleApiRequest(req, res, pathname) {
 
   // GET /api/auth/me or /auth/me
   if (req.method === 'GET' && (cleanPath === '/api/auth/me' || cleanPath === '/api/me')) {
-    const userId = req.headers['x-user-id'];
+    const queryUserId = urlObj ? urlObj.searchParams.get('userId') : null;
+    const userId = req.headers['x-user-id'] || req.headers['authorization'] || queryUserId;
     if (!userId) {
       return sendJson(res, 200, { authenticated: false, user: null });
     }
@@ -157,7 +158,8 @@ async function handleApiRequest(req, res, pathname) {
   }
 
   // Enforce Authentication for all financial planning endpoints
-  const authUserId = req.headers['x-user-id'];
+  const queryUserId = urlObj ? urlObj.searchParams.get('userId') : null;
+  const authUserId = req.headers['x-user-id'] || req.headers['authorization'] || queryUserId;
   if (!authUserId) {
     return sendJson(res, 401, {
       success: false,
@@ -375,15 +377,9 @@ async function handleApiRequest(req, res, pathname) {
   return sendJson(res, 404, { error: "API endpoint not found" });
 }
 
-const server = http.createServer((req, res) => {
-  const urlObj = new URL(req.url, `http://${req.headers.host}`);
-  const pathname = urlObj.pathname;
-
-  if (req.method === 'OPTIONS' || pathname.startsWith('/api') || pathname.startsWith('/auth')) {
-    return handleApiRequest(req, res, pathname);
-  }
-
-  let filePath = path.join(PUBLIC_DIR, pathname === '/' ? 'index.html' : pathname);
+function serveStaticFile(req, res, relPath) {
+  let safeRelPath = path.normalize(relPath).replace(/^(\.\.[\/\\])+/, '');
+  let filePath = path.join(PUBLIC_DIR, safeRelPath);
   if (!filePath.startsWith(PUBLIC_DIR)) {
     res.writeHead(403);
     return res.end('Forbidden');
@@ -391,7 +387,7 @@ const server = http.createServer((req, res) => {
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
       return res.end('File not found');
     }
 
@@ -408,17 +404,49 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, headers);
     fs.createReadStream(filePath).pipe(res);
   });
+}
+
+const server = http.createServer((req, res) => {
+  const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  const pathname = urlObj.pathname;
+  const normPath = pathname.replace(/\/+$/, '') || '/';
+
+  // Direct friendly page routes
+  if (normPath === '/' || normPath === '/index' || normPath === '/app') {
+    return serveStaticFile(req, res, 'index.html');
+  }
+  if (normPath === '/auth' || normPath === '/login') {
+    return serveStaticFile(req, res, 'auth.html');
+  }
+
+  // API endpoints check (avoid intercepting static files like /auth.html or /login.html)
+  const isApiRequest = req.method === 'OPTIONS' ||
+    normPath.startsWith('/api/') ||
+    normPath === '/api' ||
+    normPath === '/auth/login' ||
+    normPath === '/auth/register' ||
+    normPath === '/auth/me' ||
+    normPath === '/auth/logout' ||
+    ((req.method === 'POST') && (normPath === '/login' || normPath === '/register' || normPath === '/logout'));
+
+  if (isApiRequest) {
+    return handleApiRequest(req, res, pathname, urlObj);
+  }
+
+  // All other static assets (e.g. auth.html, index.html, styles, scripts, images)
+  return serveStaticFile(req, res, normPath.replace(/^\/+/, ''));
 });
 
 async function startServer(port) {
   // Initialize MongoDB connection
-  await connectToDatabase();
+  const dbStatus = await connectToDatabase();
+  const dbMode = dbStatus.db ? `MongoDB ('${DB_NAME}')` : `In-Memory Mode (MongoDB offline fallback)`;
 
   server.listen(port, () => {
     console.log(`====================================================`);
     console.log(`🤖 ConnectoryFinAssistant Server is RUNNING!`);
     console.log(`🌐 Web UI: http://localhost:${port}`);
-    console.log(`🍃 Database: MongoDB ('${DB_NAME}')`);
+    console.log(`🍃 Database: ${dbMode}`);
     console.log(`🌍 Languages: 🇩🇪 Deutsch | 🇬🇧 English`);
     console.log(`📊 Benchmark: 100k NettoProfit (PrimeDiet Care Modell)`);
     console.log(`====================================================`);

@@ -9,10 +9,16 @@ const DB_NAME = "zgs";
 
 let cachedClient = null;
 let cachedDb = null;
+let lastFailTime = 0;
 
 async function connectToDatabase() {
   if (cachedDb) {
     return { client: cachedClient, db: cachedDb };
+  }
+
+  // If connection failed within the last 15 seconds, fallback immediately to in-memory mode
+  if (Date.now() - lastFailTime < 15000) {
+    return { client: null, db: null };
   }
 
   try {
@@ -26,6 +32,7 @@ async function connectToDatabase() {
     cachedDb = db;
     return { client, db };
   } catch (err) {
+    lastFailTime = Date.now();
     console.error(`[MongoDB] Connection failed:`, err.message);
     return { client: null, db: null, error: err };
   }
